@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     {
         User::create([
         'name' => 'Admin Dinkop',
-        'email' => 'admin@proyekumkm.com',
+        'email' => 'atminwhatsoever@proyekumkm.com',
         'password' => Hash::make('KediriMapan2025'), // Ganti dengan pas
         ]);
     }
