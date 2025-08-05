@@ -7,8 +7,9 @@
 
     <h2>Silakan Login</h2>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf  <div>
+    <form method="POST" action="/login">
+        @csrf  
+        <div>
             <label for="email">Email</label>
             <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus>
             @error('email')
