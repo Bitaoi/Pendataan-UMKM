@@ -11,7 +11,8 @@ class UmkmController extends Controller
      */
     public function index()
     {
-        //
+        $umkms = Umkm::latest()->paginate(10); //ambil 10 data terbaru
+        return view('umkm.index', compact('umkms'));
     }
 
     /**
@@ -19,7 +20,8 @@ class UmkmController extends Controller
      */
     public function create()
     {
-        //
+        //ambil data kecamatan jika diprlukan untuk dropdown
+        return view('umkm.create');
     }
 
     /**
@@ -27,7 +29,30 @@ class UmkmController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //validasi data
+        $request->validate([
+            'nama_usaha' => 'required|string|max:255',
+            'nama_pemilik' => 'required|string|max:255',
+            'alamat' => 'required|string',
+            'kontak' => 'required|string|max:20',
+            'sektor_usaha' => 'required|string',
+            'status_legalitas' => 'required|string',
+            'kecamatan' => 'required|string',
+            'path_dokumen' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Contoh validasi file
+    ]);
+
+        $data = $request->all();
+        
+        //logika upload dokumen
+        if ($request->hasFile('path_dokumen')) {
+        $path = $request->file('path_dokumen')->store('dokumen_umkm', 'public');
+        $data['path_dokumen'] = $path;
+    }
+
+    Umkm::create($data);
+
+    return redirect()->route('umkm.index')->with('succes', 'Data UMKM berhasil ditambahkan!');
+
     }
 
     /**

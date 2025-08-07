@@ -12,7 +12,7 @@
             <a href="{{ route('umkm.index') }}">Data UMKM</a> |
             <a href="{{ route('peta.index') }}">Peta Persebaran</a> |
 
-            <form method="POST" action="{{ route('logout') }}>
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit">Logout</button>
             </form> 
