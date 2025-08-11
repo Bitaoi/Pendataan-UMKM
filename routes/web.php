@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UmkmController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MapController;
+use Illuminate\Support\Facades\Route;
 
 // Halaman utama atau halaman login
 Route::get('/', [LoginController::class, 'create'])->name('login');
