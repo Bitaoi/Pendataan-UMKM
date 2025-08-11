@@ -2,34 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Umkm;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // Penting untuk mengelola file
 
 class UmkmController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar data UMKM.
      */
     public function index()
     {
-        $umkms = Umkm::latest()->paginate(10); //ambil 10 data terbaru
+        // Mengambil 10 data UMKM terbaru dengan relasi kecamatan dan kelurahan
+        $umkms = Umkm::with(['kecamatan', 'kelurahan'])->latest()->paginate(10);
         return view('umkm.index', compact('umkms'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan form untuk membuat data UMKM baru.
      */
     public function create()
     {
-        //ambil data kecamatan jika diprlukan untuk dropdown
-        return view('umkm.create');
+        // Mengambil semua data kecamatan untuk dropdown
+        $kecamatans = Kecamatan::all();
+        return view('umkm.create', compact('kecamatans'));
     }
+    
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan data UMKM baru ke dalam database.
      */
     public function store(Request $request)
     {
-        //validasi data
+        // Validasi data yang masuk dari form
         $request->validate([
             'nama_usaha' => 'required|string|max:255',
             'nama_pemilik' => 'required|string|max:255',
@@ -37,53 +44,59 @@ class UmkmController extends Controller
             'kontak' => 'required|string|max:20',
             'sektor_usaha' => 'required|string',
             'status_legalitas' => 'required|string',
-            'kecamatan' => 'required|string',
-            'path_dokumen' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Contoh validasi file
-    ]);
+            'kecamatan_id' => 'required|exists:kecamatans,id',
+            'kelurahan_id' => 'required|exists:kelurahans,id',
+            'path_dokumen' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Dokumen opsional
+        ]);
 
         $data = $request->all();
         
-        //logika upload dokumen
+        // Logika untuk upload dokumen jika ada
         if ($request->hasFile('path_dokumen')) {
-        $path = $request->file('path_dokumen')->store('dokumen_umkm', 'public');
-        $data['path_dokumen'] = $path;
-    }
+            $path = $request->file('path_dokumen')->store('dokumen_umkm', 'public');
+            $data['path_dokumen'] = $path;
+        }
 
-    Umkm::create($data);
+        Umkm::create($data);
 
-    return redirect()->route('umkm.index')->with('succes', 'Data UMKM berhasil ditambahkan!');
-
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        // Redirect kembali ke halaman index dengan pesan sukses
+        return redirect()->route('umkm.index')->with('success', 'Data UMKM berhasil ditambahkan!');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Menampilkan form untuk mengedit data.
+     * (Akan kita implementasikan nanti)
      */
-    public function edit(string $id)
+    public function edit(Umkm $umkm)
     {
-        //
+        // Logika untuk halaman edit akan ditambahkan di sini
     }
 
     /**
-     * Update the specified resource in storage.
+     * Memperbarui data di database.
+     * (Akan kita implementasikan nanti)
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Umkm $umkm)
     {
-        //
+        // Logika untuk update data akan ditambahkan di sini
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus data dari database.
+     * (Akan kita implementasikan nanti)
      */
-    public function destroy(string $id)
+    public function destroy(Umkm $umkm)
     {
-        //
+        // Logika untuk hapus data akan ditambahkan di sini
+    }
+
+    /**
+     * API endpoint untuk mendapatkan daftar kelurahan berdasarkan kecamatan.
+     * Ini digunakan oleh JavaScript di form create.
+     */
+    public function getKelurahanByKecamatan($kecamatan_id)
+    {
+        $kelurahans = \App\Models\Kelurahan::where('kecamatan_id', $kecamatan_id)->get();
+        return response()->json($kelurahans);
     }
 }

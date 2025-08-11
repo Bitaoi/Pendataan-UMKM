@@ -2,10 +2,11 @@
 <html>
 <head>
     <title>Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
-            background-color: aliceblue;
+            background-color: #f8f9fa;
             height: 100vh;
             margin: 0;
             display: flex;
@@ -17,46 +18,48 @@
             width: 100%;
             max-width: 400px;
         }
-        input {
-            width: 100%;
-            margin-bottom: 1rem;
-        }
-        button {
-            width: 100%;
-        }
     </style>
 </head>
 <body>
 
-    <form method="POST" action="/login">
-        @csrf  
+    <form method="POST" action="{{ url('/login') }}">
+        @csrf
         <div class="card shadow-sm">
-            <h2 class="text-center mb-4">ADMIN BOLEH LOGIN :3</h2>
-            <label for="email">Email</label>
-            <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus class="form-control">
-            @error('email')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
+            <h2 class="text-center mb-4">ADMIN LOGIN</h2>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus class="form-control">
+                @error('email')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div>
 
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" required class="form-control">
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <input type="password" name="password" id="password" required class="form-control">
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
 
-            <button type="submit" class="btn btn-primary mt-3">Login</button>
+            <button type="submit" class="btn btn-primary mt-3 w-100">Login</button>
         </div>
     </form>
 
     <script>
-        const toggle = document.getElementById('togglePassword');
-        const password = docunment.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
 
-        toggle.addEventListener('click', function ()) {
-            const type = password.getAtribute('type') === 'password' ? 'text' : 'password';
-            password.SetAtribute('type',type);
+        togglePassword.addEventListener('click', function () {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
 
-            //ganti ikon 
-            this.text.Content = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>'
-
-        }
+            // Ganti ikon
+            this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+        });
+    </script>
 
 </body>
 </html>

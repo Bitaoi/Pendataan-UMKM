@@ -1,29 +1,21 @@
-<nav class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 p-4">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-
-        {{-- Logo / Brand --}}
-        <a href="{{ route('dashboard') }}" class="text-xl font-bold text-gray-800 dark:text-gray-200">
-            UMKM Dashboard
-        </a>
-
-        {{-- Navigation Links --}}
-        <div class="space-x-6 flex items-center">
-            <a href="{{ route('dashboard') }}" class="text-gray-700 dark:text-gray-300 hover:underline">
-                Dashboard
-            </a>
-            <a href="{{ route('umkm.index') }}" class="text-gray-700 dark:text-gray-300 hover:underline">
-                Data UMKM
-            </a>
-            <a href="{{ route('kategori.index') }}" class="text-gray-700 dark:text-gray-300 hover:underline">
-                Kategori dan Sektor Usaha
-            </a>
-
-            {{-- Logout Form --}}
-            <form method="POST" action="{{ route('logout') }}">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ route('dashboard') }}">UMKM Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('umkm.index') }}">Data UMKM</a>
+                </li>
+            </ul>
+            <form method="POST" action="{{ route('logout') }}" class="d-flex">
                 @csrf
-                <button type="submit" class="text-red-600 hover:underline">
-                    Logout
-                </button>
+                <button type="submit" class="btn btn-danger">Logout</button>
             </form>
         </div>
     </div>
