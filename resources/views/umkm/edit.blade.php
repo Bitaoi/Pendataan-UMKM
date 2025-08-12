@@ -9,22 +9,13 @@
                     <h4 class="mb-0">Edit Data UMKM: {{ $umkm->nama_usaha }}</h4>
                 </div>
                 <div class="card-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
                     <form action="{{ route('umkm.update', $umkm->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        @method('PUT') {{-- Metode HTTP untuk update --}}
+                        @method('PUT')
                         <div class="row">
                             <!-- Kolom Kiri -->
                             <div class="col-md-6">
+                                {{-- ... (Input lain tetap sama) ... --}}
                                 <div class="mb-3">
                                     <label for="nama_usaha" class="form-label">Nama Usaha</label>
                                     <input type="text" class="form-control" id="nama_usaha" name="nama_usaha" value="{{ old('nama_usaha', $umkm->nama_usaha) }}" required>
@@ -40,6 +31,14 @@
                                 <div class="mb-3">
                                     <label for="alamat" class="form-label">Alamat Lengkap Usaha</label>
                                     <textarea class="form-control" id="alamat" name="alamat" rows="3" required>{{ old('alamat', $umkm->alamat) }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
+                                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha', $umkm->sektor_usaha) }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status_legalitas" class="form-label">Status Legalitas</label>
+                                    <input type="text" class="form-control" id="status_legalitas" name="status_legalitas" value="{{ old('status_legalitas', $umkm->status_legalitas) }}" required>
                                 </div>
                             </div>
 
@@ -62,15 +61,26 @@
                                         <option value="" selected disabled>Pilih Kecamatan Terlebih Dahulu</option>
                                     </select>
                                 </div>
-                                 <div class="mb-3">
-                                    <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
-                                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha', $umkm->sektor_usaha) }}" required>
+
+                                {{-- KOLOM BARU UNTUK KOORDINAT --}}
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="mb-3">
+                                            <label for="latitude" class="form-label">Latitude</label>
+                                            <input type="text" class="form-control" id="latitude" name="latitude" value="{{ old('latitude', $umkm->latitude) }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="mb-3">
+                                            <label for="longitude" class="form-label">Longitude</label>
+                                            <input type="text" class="form-control" id="longitude" name="longitude" value="{{ old('longitude', $umkm->longitude) }}">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="status_legalitas" class="form-label">Status Legalitas</label>
-                                    <input type="text" class="form-control" id="status_legalitas" name="status_legalitas" value="{{ old('status_legalitas', $umkm->status_legalitas) }}" required>
-                                </div>
-                                <div class="mb-3">
+                                <small class="form-text text-muted">Isi Latitude dan Longitude agar lokasi muncul di peta.</small>
+                                {{-- AKHIR KOLOM BARU --}}
+
+                                <div class="mb-3 mt-3">
                                     <label for="path_dokumen" class="form-label">Upload Dokumen Baru (Opsional)</label>
                                     <input class="form-control" type="file" id="path_dokumen" name="path_dokumen">
                                     @if($umkm->path_dokumen)
@@ -91,6 +101,7 @@
     </div>
 </div>
 
+{{-- Kode JavaScript tetap sama --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const kecamatanSelect = document.getElementById('kecamatan_id');
@@ -121,14 +132,10 @@
         kecamatanSelect.addEventListener('change', function() {
             fetchKelurahan(this.value);
         });
-
-        // --- BAGIAN PENTING UNTUK EDIT ---
-        // Ambil ID kecamatan dan kelurahan yang sudah ada dari data UMKM
+        
         const initialKecamatanId = "{{ old('kecamatan_id', $umkm->kecamatan_id) }}";
         const initialKelurahanId = "{{ old('kelurahan_id', $umkm->kelurahan_id) }}";
 
-        // Jika ada kecamatan awal, panggil fungsi fetchKelurahan
-        // untuk mengisi dropdown kelurahan dan memilih yang sesuai.
         if (initialKecamatanId) {
             fetchKelurahan(initialKecamatanId, initialKelurahanId);
         }

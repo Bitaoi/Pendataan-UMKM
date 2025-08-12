@@ -13,6 +13,9 @@
     },
     "dependencies": {
         "bootstrap": "^5.3.3",
-        "bootstrap-icons": "^1.13.1"
+        "bootstrap-icons": "^1.13.1",
+        "leaflet": "^1.9.4",
+        "leaflet.heat": "^0.2.0",
+        "leaflet.markercluster": "^1.5.3"
     }
 }

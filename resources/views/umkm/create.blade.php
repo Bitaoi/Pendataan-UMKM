@@ -40,6 +40,14 @@
                                     <label for="alamat" class="form-label">Alamat Lengkap Usaha</label>
                                     <textarea class="form-control" id="alamat" name="alamat" rows="3" required>{{ old('alamat') }}</textarea>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
+                                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha') }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status_legalitas" class="form-label">Status Legalitas</label>
+                                    <input type="text" class="form-control" id="status_legalitas" name="status_legalitas" value="{{ old('status_legalitas') }}" required>
+                                </div>
                             </div>
 
                             <!-- Kolom Kanan -->
@@ -59,15 +67,26 @@
                                         <option value="" selected disabled>Pilih Kecamatan Terlebih Dahulu</option>
                                     </select>
                                 </div>
-                                 <div class="mb-3">
-                                    <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
-                                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha') }}" required>
+                                
+                                {{-- KOLOM BARU UNTUK KOORDINAT --}}
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="mb-3">
+                                            <label for="latitude" class="form-label">Latitude</label>
+                                            <input type="text" class="form-control" id="latitude" name="latitude" value="{{ old('latitude') }}" placeholder="-7.8216">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="mb-3">
+                                            <label for="longitude" class="form-label">Longitude</label>
+                                            <input type="text" class="form-control" id="longitude" name="longitude" value="{{ old('longitude') }}" placeholder="112.0150">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="status_legalitas" class="form-label">Status Legalitas</label>
-                                    <input type="text" class="form-control" id="status_legalitas" name="status_legalitas" value="{{ old('status_legalitas') }}" required>
-                                </div>
-                                <div class="mb-3">
+                                <small class="form-text text-muted">Isi Latitude dan Longitude agar lokasi muncul di peta.</small>
+                                {{-- AKHIR KOLOM BARU --}}
+
+                                <div class="mb-3 mt-3">
                                     <label for="path_dokumen" class="form-label">Upload Dokumen (Opsional)</label>
                                     <input class="form-control" type="file" id="path_dokumen" name="path_dokumen">
                                     <small class="text-muted">Format: JPG, PNG, PDF. Maks: 2MB.</small>
@@ -86,6 +105,7 @@
     </div>
 </div>
 
+{{-- Kode JavaScript tetap sama --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const kecamatanSelect = document.getElementById('kecamatan_id');
@@ -110,10 +130,6 @@
                         }
                         kelurahanSelect.appendChild(option);
                     });
-                })
-                .catch(error => {
-                    console.error('Error fetching kelurahan:', error);
-                    kelurahanSelect.innerHTML = '<option value="" selected disabled>Gagal memuat data</option>';
                 });
         }
 
