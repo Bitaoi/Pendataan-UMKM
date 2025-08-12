@@ -2,38 +2,36 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class KecamatanKelurahanseeder extends Seeder
+class KecamatanKelurahanSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // mematikan foreign key check untuk menghindari error saat truncate
+        // matikan cek foreign key sementara agar truncate tidak error
         Schema::disableForeignKeyConstraints();
 
-        //mengosongkan tabel kelurahan dan kecamatan
+        // sesuaikan nama tabel bila di projectmu berbeda (kecamatans / kecamatan)
         DB::table('kelurahans')->truncate();
-        DB::table('kecamatan')->truncate();
+        DB::table('kecamatans')->truncate();
 
-        //menghidupkan ulang foreign key check
-        Schema:: enableForeignKeyConstraints();
+        Schema::enableForeignKeyConstraints();
 
-        //mendefinisikan dan memasukkan data kecamatan
+        // data kecamatan (id harus unik)
         $kecamatans = [
             ['id' => 1, 'nama_kecamatan' => 'Mojoroto', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 1, 'nama_kecamatan' => 'Kota', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 1, 'nama_kecamatan' => 'Pesantren', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'nama_kecamatan' => 'Kota', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'nama_kecamatan' => 'Pesantren', 'created_at' => now(), 'updated_at' => now()],
         ];
 
         DB::table('kecamatans')->insert($kecamatans);
 
-        //mendefinisikan dan memasukkan data kelurahan
+        // data kelurahan, pastikan kecamatan_id menunjuk ke id di atas
         $kelurahans = [
             // Kecamatan Mojoroto (id: 1)
             ['kecamatan_id' => 1, 'nama_kelurahan' => 'Bandar Kidul', 'created_at' => now(), 'updated_at' => now()],
@@ -87,7 +85,7 @@ class KecamatanKelurahanseeder extends Seeder
             ['kecamatan_id' => 3, 'nama_kelurahan' => 'Tinalan', 'created_at' => now(), 'updated_at' => now()],
             ['kecamatan_id' => 3, 'nama_kelurahan' => 'Tosaren', 'created_at' => now(), 'updated_at' => now()],
         ];
-        DB::table('kelurahans')->insert($kelurahans);
 
+        DB::table('kelurahans')->insert($kelurahans);
     }
 }

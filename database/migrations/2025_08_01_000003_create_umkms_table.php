@@ -19,9 +19,18 @@ return new class extends Migration
             $table->string('kontak');
             $table->string('sektor_usaha');
             $table->string('status_legalitas');
-            $table->string('kecamatan');
+            
+            // --- INI BAGIAN YANG DIPERBAIKI ---
+            // Menghapus $table->string('kecamatan');
+            // dan menggantinya dengan relasi yang benar.
+            $table->foreignId('kecamatan_id')->constrained('kecamatans')->onDelete('cascade');
+            $table->foreignId('kelurahan_id')->constrained('kelurahans')->onDelete('cascade');
+            // ------------------------------------
+
+            // Mempertahankan kolom latitude dan longitude Anda
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 11, 7)->nullable();
+            
             $table->string('path_dokumen')->nullable();
             $table->timestamps();
         });
