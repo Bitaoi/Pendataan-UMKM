@@ -5,12 +5,15 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
     #map { 
         height: 60vh; /* Tinggi peta 60% dari tinggi viewport */
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     .filter-card {
         margin-bottom: 1.5rem;
@@ -24,6 +27,9 @@
         width: 18px; height: 18px; float: left;
         margin-right: 8px; opacity: 0.9; border-radius: 50%;
     }
+    body {
+            font-family: 'Quicksand', sans-serif;
+        }
 </style>
 
 <div class="container">

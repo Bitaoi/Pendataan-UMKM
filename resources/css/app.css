@@ -1,1 +1,54 @@
+/* 1. Import Bootstrap Terlebih Dahulu */
 @import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* 2. Definisikan ulang variabel warna Bootstrap */
+:root {
+    /* Warna Utama (Primary) -> Sky Blue */
+    --bs-primary: #9DC4D5;
+    --bs-primary-rgb: 157, 196, 213;
+
+    /* Warna Sekunder (Secondary) -> Bisa kita gunakan Dark Green untuk kontras */
+    --bs-secondary: #203627;
+    --bs-secondary-rgb: 32, 54, 39;
+
+    /* Warna untuk tombol "Success" atau "Info" -> Lemon Lime */
+    --bs-info: #E8FF40;
+    --bs-info-rgb: 232, 255, 64;
+
+    /* Warna untuk tombol "Warning" atau "Edit" */
+    --bs-warning: #f58231; /* Menggunakan warna oranye yang kontras */
+    --bs-warning-rgb: 245, 130, 49;
+
+    /* Warna untuk tombol "Danger" atau "Hapus" */
+    --bs-danger: #e6194B; /* Menggunakan warna merah yang kontras */
+    --bs-danger-rgb: 230, 25, 75;
+
+    /* Warna Latar Belakang Body -> Anti-Flesh White */
+    --bs-body-bg: #EFEFEF;
+
+    /* Warna Teks Utama -> Dark Green */
+    --bs-body-color: #203627;
+}
+
+/* 3. Kustomisasi Navbar */
+/* Kita akan membuat navbar menggunakan Dark Green sebagai latar belakang */
+.navbar-custom {
+    background-color: #203627; /* Dark Green */
+}
+
+/* Mengubah warna teks dan link di navbar menjadi putih agar terbaca */
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: #EFEFEF; /* Anti-Flesh White */
+}
+
+/* Mengubah warna tombol logout di navbar */
+.navbar-custom .btn-logout {
+    background-color: #E8FF40; /* Lemon Lime */
+    color: #203627; /* Dark Green */
+    font-weight: bold;
+    border: none;
+}
+.navbar-custom .btn-logout:hover {
+    opacity: 0.9;
+}
