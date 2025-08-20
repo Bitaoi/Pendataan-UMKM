@@ -15,7 +15,7 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    .filter-card {
+    .filter-card, .map-card {
         margin-bottom: 1.5rem;
     }
     .legend {
@@ -28,8 +28,8 @@
         margin-right: 8px; opacity: 0.9; border-radius: 50%;
     }
     body {
-            font-family: 'Quicksand', sans-serif;
-        }
+        font-family: 'Quicksand', sans-serif;
+    }
 </style>
 
 <div class="container">
@@ -80,7 +80,7 @@
     </div>
 
     {{-- PETA --}}
-    <div class="card shadow-sm">
+    <div class="card shadow-sm map-card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0 fw-bold">Peta Persebaran UMKM</h4>
             <div>
@@ -96,26 +96,36 @@
             <div id="map"></div>
         </div>
     </div>
+
+    {{-- KARTU BARU UNTUK GRAFIK --}}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0 fw-bold">Grafik Pertumbuhan UMKM (12 Bulan Terakhir)</h4>
+        </div>
+        <div class="card-body">
+            <canvas id="growthChart" style="height: 300px;"></canvas>
+        </div>
+    </div>
 </div>
 
 {{-- Memuat JS untuk Leaflet & Plugin --}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+{{-- Memuat JS untuk Chart.js --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. INISIALISASI PETA
+    // --- BAGIAN KODE UNTUK PETA ---
     var map = L.map('map').setView([-7.8216, 112.0150], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19, attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 2. AMBIL DATA DARI CONTROLLER
     var locations = @json($locations);
     var allSectors = @json($sectors);
 
-    // 3. PENGATURAN WARNA & IKON
     var colorPalette = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6'];
     var sectorColorMap = {};
     allSectors.forEach((sector, index) => {
@@ -127,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return L.divIcon({ className: "my-custom-pin", iconAnchor: [0, 24], popupAnchor: [0, -36], html: `<span style="${markerHtmlStyles}" />` });
     }
 
-    // 4. BUAT LAYER UNTUK SETIAP TAMPILAN
     var standardLayer = L.layerGroup();
     var clusterLayer = L.markerClusterGroup();
     var heatLayer = L.heatLayer([], { radius: 25 });
@@ -139,16 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
             var icon = createCustomIcon(color);
             var popupContent = `<b>${loc.nama_usaha}</b><br><b>Sektor:</b> ${loc.sektor_usaha}<br><b>Pemilik:</b> ${loc.nama_pemilik}`;
             
-            // Tambahkan ke setiap layer
             standardLayer.addLayer(L.marker([loc.latitude, loc.longitude], {icon: icon}).bindPopup(popupContent));
             clusterLayer.addLayer(L.marker([loc.latitude, loc.longitude], {icon: icon}).bindPopup(popupContent));
-            heatPoints.push([loc.latitude, loc.longitude, 0.5]); // 0.5 adalah intensitas
+            heatPoints.push([loc.latitude, loc.longitude, 0.5]);
         }
     });
     heatLayer.setLatLngs(heatPoints);
 
-    // 5. LOGIKA PERGANTIAN TAMPILAN
-    var currentViewLayer = clusterLayer; // Tampilan default adalah cluster
+    var currentViewLayer = clusterLayer;
     map.addLayer(currentViewLayer);
 
     function switchView(viewType) {
@@ -172,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('view-cluster').addEventListener('click', () => switchView('cluster'));
     document.getElementById('view-heatmap').addEventListener('click', () => switchView('heatmap'));
 
-    // 6. BUAT LEGEDA
     var legend = L.control({position: 'bottomright'});
     legend.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'info legend');
@@ -185,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     legend.addTo(map);
 
-    // 7. FITUR "CARI LOKASI SAYA"
     document.getElementById('find-me').addEventListener('click', function() {
         navigator.geolocation.getCurrentPosition(function(position) {
             var lat = position.coords.latitude;
@@ -203,7 +208,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // 8. LOGIKA FILTER KELURAHAN DINAMIS
     const kecamatanFilter = document.getElementById('kecamatan_id_filter');
     const kelurahanFilter = document.getElementById('kelurahan_id_filter');
     
@@ -228,11 +232,59 @@ document.addEventListener('DOMContentLoaded', function () {
         fetchKelurahanForFilter(this.value);
     });
 
-    // Jika halaman dimuat dengan filter kecamatan, panggil fungsi untuk mengisi kelurahan
     const initialKecamatanFilterId = "{{ request('kecamatan_id') }}";
     const initialKelurahanFilterId = "{{ request('kelurahan_id') }}";
     if (initialKecamatanFilterId) {
         fetchKelurahanForFilter(initialKecamatanFilterId, initialKelurahanFilterId);
+    }
+
+    // --- BAGIAN KODE BARU UNTUK GRAFIK ---
+    const ctx = document.getElementById('growthChart');
+    if (ctx) { // Cek apakah elemen grafik ada di halaman
+        const chartLabels = @json($chartLabels);
+        const chartValues = @json($chartValues);
+
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(157, 196, 213, 0.6)'); // Warna Sky Blue (sesuai palet)
+        gradient.addColorStop(1, 'rgba(157, 196, 213, 0)');   // Transparan
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Pendaftaran UMKM Baru',
+                    data: chartValues,
+                    borderColor: '#9DC4D5', // Sky Blue
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#203627', // Dark Green
+                    pointRadius: 5,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            color: '#203627', // Dark Green
+                            // Pastikan hanya angka bulat yang ditampilkan di sumbu Y
+                            callback: function(value) {if (value % 1 === 0) {return value;}}
+                        }
+                    },
+                    x: {
+                        ticks: { color: '#203627' } // Dark Green
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
     }
 });
 </script>
