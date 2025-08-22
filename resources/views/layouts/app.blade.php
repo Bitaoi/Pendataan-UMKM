@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <!-- Bootstrap Icons (ini boleh tetap ada) -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Hanya panggil Vite. Ini adalah satu-satunya sumber CSS yang kita butuhkan. -->
+    <!-- Vite (CSS & JS utama dari Laravel) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    {{-- ▼▼▼ SLOT UNTUK CSS TAMBAHAN DARI HALAMAN LAIN ▼▼▼ --}}
+    @yield('styles')
 </head>
 <body>
     <div id="app">
@@ -25,5 +27,8 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    {{-- ▼▼▼ SLOT UNTUK JAVASCRIPT TAMBAHAN DARI HALAMAN LAIN ▼▼▼ --}}
+    @yield('scripts')
 </body>
 </html>

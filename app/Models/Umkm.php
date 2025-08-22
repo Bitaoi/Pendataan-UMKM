@@ -17,30 +17,26 @@ class Umkm extends Model
     protected $fillable = [
         'nama_usaha',
         'nama_pemilik',
-        'alamat',
-        'kontak',
+        'kelurahan_id',
+        'alamat_lengkap', // <-- Memastikan kolom ini diizinkan
+        'nomor_telepon',  // <-- Memastikan kolom ini diizinkan
         'sektor_usaha',
-        'status_legalitas',
-        'kecamatan_id',     // <-- INI YANG PENTING
-        'kelurahan_id',     // <-- INI YANG PENTING
-        'latitude',         // <-- Ditambahkan untuk masa depan
-        'longitude',        // <-- Ditambahkan untuk masa depan
-        'path_dokumen',
+        'status_nib',     // <-- Memastikan kolom ini diizinkan
+        'nomor_kbli',
+        'dokumen_legalitas_path',
+        'latitude',
+        'longitude',
     ];
 
     /**
-     * Mendefinisikan relasi bahwa satu UMKM dimiliki oleh satu Kecamatan.
-     */
-    public function kecamatan()
-    {
-        return $this->belongsTo(Kecamatan::class);
-    }
-
-    /**
-     * Mendefinisikan relasi bahwa satu UMKM dimiliki oleh satu Kelurahan.
+     * Relasi ke model Kelurahan.
      */
     public function kelurahan()
     {
         return $this->belongsTo(Kelurahan::class);
     }
+    
+    // Jika Anda masih memiliki relasi ke kecamatan di model ini,
+    // sebaiknya dihapus karena relasi yang benar adalah melalui Kelurahan.
+    // public function kecamatan() { ... }
 }

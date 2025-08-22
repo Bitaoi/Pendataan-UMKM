@@ -1,156 +1,123 @@
 @extends('layouts.app')
 
 @section('content')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-    body {
-            font-family: 'Quicksand', sans-serif;
-        }
-</style>
-
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h4 class="mb-0">Formulir Data UMKM Baru</h4>
+    <h1>Formulir Data UMKM Baru</h1>
+
+    {{-- Menampilkan error validasi jika ada --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('umkm.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="row">
+            {{-- Kolom Kiri --}}
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="nama_usaha" class="form-label">Nama Usaha</label>
+                    <input type="text" class="form-control" id="nama_usaha" name="nama_usaha" value="{{ old('nama_usaha') }}" required>
                 </div>
-                <div class="card-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                <div class="mb-3">
+                    <label for="nama_pemilik" class="form-label">Nama Pemilik</label>
+                    <input type="text" class="form-control" id="nama_pemilik" name="nama_pemilik" value="{{ old('nama_pemilik') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="nomor_telepon" class="form-label">Kontak (No. HP/Telepon)</label>
+                    {{-- PERBAIKAN: name="nomor_telepon" --}}
+                    <input type="text" class="form-control" id="nomor_telepon" name="nomor_telepon" value="{{ old('nomor_telepon') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="alamat_lengkap" class="form-label">Alamat Lengkap Usaha</label>
+                    {{-- PERBAIKAN: name="alamat_lengkap" --}}
+                    <textarea class="form-control" id="alamat_lengkap" name="alamat_lengkap" rows="3" required>{{ old('alamat_lengkap') }}</textarea>
+                </div>
+                 <div class="mb-3">
+                    <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
+                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha') }}" required>
+                </div>
+            </div>
 
-                    <form action="{{ route('umkm.store') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            <!-- Kolom Kiri -->
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="nama_usaha" class="form-label">Nama Usaha</label>
-                                    <input type="text" class="form-control" id="nama_usaha" name="nama_usaha" value="{{ old('nama_usaha') }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="nama_pemilik" class="form-label">Nama Pemilik</label>
-                                    <input type="text" class="form-control" id="nama_pemilik" name="nama_pemilik" value="{{ old('nama_pemilik') }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="kontak" class="form-label">Kontak (No. HP/Telepon)</label>
-                                    <input type="text" class="form-control" id="kontak" name="kontak" value="{{ old('kontak') }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="alamat" class="form-label">Alamat Lengkap Usaha</label>
-                                    <textarea class="form-control" id="alamat" name="alamat" rows="3" required>{{ old('alamat') }}</textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
-                                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha') }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="status_legalitas" class="form-label">Status Legalitas</label>
-                                    <input type="text" class="form-control" id="status_legalitas" name="status_legalitas" value="{{ old('status_legalitas') }}" required>
-                                </div>
-                            </div>
-
-                            <!-- Kolom Kanan -->
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="kecamatan_id" class="form-label">Kecamatan</label>
-                                    <select class="form-select" id="kecamatan_id" name="kecamatan_id" required>
-                                        <option value="" selected disabled>Pilih Kecamatan</option>
-                                        @foreach($kecamatans as $kecamatan)
-                                            <option value="{{ $kecamatan->id }}" {{ old('kecamatan_id') == $kecamatan->id ? 'selected' : '' }}>{{ $kecamatan->nama_kecamatan }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="kelurahan_id" class="form-label">Kelurahan</label>
-                                    <select class="form-select" id="kelurahan_id" name="kelurahan_id" required>
-                                        <option value="" selected disabled>Pilih Kecamatan Terlebih Dahulu</option>
-                                    </select>
-                                </div>
-                                
-                                {{-- KOLOM BARU UNTUK KOORDINAT --}}
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <div class="mb-3">
-                                            <label for="latitude" class="form-label">Latitude</label>
-                                            <input type="text" class="form-control" id="latitude" name="latitude" value="{{ old('latitude') }}" placeholder="-7.8216">
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div class="mb-3">
-                                            <label for="longitude" class="form-label">Longitude</label>
-                                            <input type="text" class="form-control" id="longitude" name="longitude" value="{{ old('longitude') }}" placeholder="112.0150">
-                                        </div>
-                                    </div>
-                                </div>
-                                <small class="form-text text-muted">Isi Latitude dan Longitude agar lokasi muncul di peta.</small>
-                                {{-- AKHIR KOLOM BARU --}}
-
-                                <div class="mb-3 mt-3">
-                                    <label for="path_dokumen" class="form-label">Upload Dokumen (Opsional)</label>
-                                    <input class="form-control" type="file" id="path_dokumen" name="path_dokumen">
-                                    <small class="text-muted">Format: JPG, PNG, PDF. Maks: 2MB.</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-end mt-4">
-                            <a href="{{ route('umkm.index') }}" class="btn btn-secondary me-2">Batal</a>
-                            <button type="submit" class="btn btn-primary">Simpan Data</button>
-                        </div>
-                    </form>
+            {{-- Kolom Kanan --}}
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="kecamatan_id" class="form-label">Kecamatan</label>
+                    <select class="form-select" id="kecamatan_id" name="kecamatan_id" required>
+                        <option selected disabled value="">Pilih Kecamatan...</option>
+                        @foreach($kecamatans as $kecamatan)
+                            <option value="{{ $kecamatan->id }}">{{ $kecamatan->nama_kecamatan }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="kelurahan_id" class="form-label">Kelurahan</label>
+                    <select class="form-select" id="kelurahan_id" name="kelurahan_id" required>
+                        <option selected disabled value="">Pilih Kecamatan terlebih dahulu</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="status_nib" class="form-label">Status NIB</label>
+                    {{-- PERBAIKAN: Menambahkan field status_nib --}}
+                    <select class="form-select" id="status_nib" name="status_nib" required>
+                        <option selected disabled value="">Pilih Status...</option>
+                        <option value="Sudah Ada" {{ old('status_nib') == 'Sudah Ada' ? 'selected' : '' }}>Sudah Ada</option>
+                        <option value="Belum Ada" {{ old('status_nib') == 'Belum Ada' ? 'selected' : '' }}>Belum Ada</option>
+                        <option value="Sedang Proses" {{ old('status_nib') == 'Sedang Proses' ? 'selected' : '' }}>Sedang Proses</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="latitude" class="form-label">Latitude</label>
+                        <input type="text" class="form-control" id="latitude" name="latitude" value="{{ old('latitude') }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="longitude" class="form-label">Longitude</label>
+                        <input type="text" class="form-control" id="longitude" name="longitude" value="{{ old('longitude') }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="dokumen_legalitas" class="form-label">Upload Dokumen (Opsional)</label>
+                    <input class="form-control" type="file" id="dokumen_legalitas" name="dokumen_legalitas">
+                    <div class="form-text">Format: JPG, PNG, PDF. Maks: 2MB.</div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="text-end">
+            <a href="{{ route('umkm.index') }}" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="btn btn-primary">Simpan Data</button>
+        </div>
+    </form>
 </div>
+@endsection
 
-{{-- Kode JavaScript tetap sama --}}
+@section('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const kecamatanSelect = document.getElementById('kecamatan_id');
-        const kelurahanSelect = document.getElementById('kelurahan_id');
-        
-        function fetchKelurahan(kecamatanId, selectedKelurahanId = null) {
-            if (!kecamatanId) {
-                kelurahanSelect.innerHTML = '<option value="" selected disabled>Pilih Kecamatan Terlebih Dahulu</option>';
-                return;
-            }
+    // Script untuk dropdown Kelurahan dinamis
+    document.getElementById('kecamatan_id').addEventListener('change', function() {
+        var kecamatanId = this.value;
+        var kelurahanSelect = document.getElementById('kelurahan_id');
+        kelurahanSelect.innerHTML = '<option value="">Memuat...</option>';
 
+        if (kecamatanId) {
             fetch(`/api/kelurahan/${kecamatanId}`)
                 .then(response => response.json())
                 .then(data => {
-                    kelurahanSelect.innerHTML = '<option value="" selected disabled>Pilih Kelurahan</option>';
+                    kelurahanSelect.innerHTML = '<option selected disabled value="">Pilih Kelurahan...</option>';
                     data.forEach(function(kelurahan) {
-                        const option = document.createElement('option');
+                        var option = document.createElement('option');
                         option.value = kelurahan.id;
                         option.textContent = kelurahan.nama_kelurahan;
-                        if (selectedKelurahanId && kelurahan.id == selectedKelurahanId) {
-                            option.selected = true;
-                        }
                         kelurahanSelect.appendChild(option);
                     });
                 });
-        }
-
-        kecamatanSelect.addEventListener('change', function() {
-            fetchKelurahan(this.value);
-        });
-
-        const oldKecamatanId = "{{ old('kecamatan_id') }}";
-        const oldKelurahanId = "{{ old('kelurahan_id') }}";
-        if (oldKecamatanId) {
-            fetchKelurahan(oldKecamatanId, oldKelurahanId);
+        } else {
+            kelurahanSelect.innerHTML = '<option selected disabled value="">Pilih Kecamatan terlebih dahulu</option>';
         }
     });
 </script>

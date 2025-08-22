@@ -15,23 +15,21 @@ return new class extends Migration
             $table->id();
             $table->string('nama_usaha');
             $table->string('nama_pemilik');
-            $table->text('alamat');
-            $table->string('kontak');
-            $table->string('sektor_usaha');
-            $table->string('status_legalitas');
             
-            // --- INI BAGIAN YANG DIPERBAIKI ---
-            // Menghapus $table->string('kecamatan');
-            // dan menggantinya dengan relasi yang benar.
-            $table->foreignId('kecamatan_id')->constrained('kecamatans')->onDelete('cascade');
+            // Menggunakan foreign key yang benar ke tabel kelurahans
             $table->foreignId('kelurahan_id')->constrained('kelurahans')->onDelete('cascade');
-            // ------------------------------------
-
-            // Mempertahankan kolom latitude dan longitude Anda
+            
+            $table->text('alamat_lengkap');
+            $table->string('nomor_telepon');
+            $table->string('sektor_usaha');
+            
+            // Menggunakan nama kolom yang benar: 'status_nib'
+            $table->enum('status_nib', ['Sudah Ada', 'Belum Ada', 'Sedang Proses']);
+            
+            $table->string('nomor_kbli')->nullable();
+            $table->string('dokumen_legalitas_path')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 11, 7)->nullable();
-            
-            $table->string('path_dokumen')->nullable();
             $table->timestamps();
         });
     }
