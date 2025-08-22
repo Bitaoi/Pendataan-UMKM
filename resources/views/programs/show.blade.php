@@ -2,17 +2,31 @@
 
 @section('content')
 <div class="container">
-    <h2>Detail Program: {{ $program->nama_program }}</h2>
+    {{-- ▼▼▼ KODE BARU DITAMBAHKAN DI SINI ▼▼▼ --}}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Detail Program: {{ $program->nama_program }}</h2>
+        <a href="{{ route('programs.index') }}" class="btn btn-secondary">Kembali</a>
+    </div>
+    {{-- ▲▲▲ AKHIR DARI KODE BARU ▲▲▲ --}}
+
     <p>{{ $program->deskripsi }}</p>
     <hr>
 
+    <!-- Bagian Manajemen Peserta -->
     <div class="card mb-4">
         <div class="card-header">Manajemen Peserta ({{ $program->pesertas->count() }} / {{ $program->kuota_peserta }})</div>
         <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+
             <form action="{{ route('programs.addPeserta', $program->id) }}" method="POST" class="mb-3">
                 @csrf
                 <div class="input-group">
-                    <select name="umkm_id" class="form-select">
+                    <select name="umkm_id" class="form-select" required>
                         <option selected disabled>Pilih UMKM untuk didaftarkan...</option>
                         @foreach($umkmsNotInProgram as $umkm)
                             <option value="{{ $umkm->id }}">{{ $umkm->nama_usaha }}</option>
@@ -25,7 +39,7 @@
                 @forelse($program->pesertas as $peserta)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ $peserta->nama_usaha }}
-                        <form action="{{ route('programs.removePeserta', [$program->id, $peserta->id]) }}" method="POST">
+                        <form action="{{ route('programs.removePeserta', [$program->id, $peserta->id]) }}" method="POST" onsubmit="return confirm('Yakin hapus peserta ini?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger">Keluarkan</button>
@@ -38,6 +52,7 @@
         </div>
     </div>
 
+    <!-- Bagian Pelacakan Progres -->
     <div class="card">
         <div class="card-header">Pelacakan Progres</div>
         <div class="card-body">
@@ -45,26 +60,27 @@
                 @csrf
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label>Pilih Peserta</label>
+                        <label class="form-label">Pilih Peserta</label>
                         <select name="umkm_id" class="form-select" required>
+                            <option selected disabled value="">Pilih Peserta...</option>
                             @foreach($program->pesertas as $peserta)
                                 <option value="{{ $peserta->id }}">{{ $peserta->nama_usaha }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label>Tanggal</label>
+                        <label class="form-label">Tanggal</label>
                         <input type="date" name="tanggal_log" class="form-control" required>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label>Deskripsi Progres/Aktivitas</label>
+                    <label class="form-label">Deskripsi Progres/Aktivitas</label>
                     <textarea name="deskripsi_progres" class="form-control" rows="2" required></textarea>
                 </div>
                 <button type="submit" class="btn btn-info">Catat Progres</button>
             </form>
 
-            <h5>Riwayat Progres:</h5>
+            <h5 class="mt-4">Riwayat Progres:</h5>
             @forelse($program->logs->sortByDesc('tanggal_log') as $log)
             <div class="alert alert-light">
                 <strong>{{ $log->umkm->nama_usaha }}</strong> - [{{ $log->tanggal_log }}] <br>

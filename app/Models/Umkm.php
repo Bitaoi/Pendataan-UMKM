@@ -18,10 +18,10 @@ class Umkm extends Model
         'nama_usaha',
         'nama_pemilik',
         'kelurahan_id',
-        'alamat_lengkap', // <-- Memastikan kolom ini diizinkan
-        'nomor_telepon',  // <-- Memastikan kolom ini diizinkan
+        'alamat_lengkap',
+        'nomor_telepon',
         'sektor_usaha',
-        'status_nib',     // <-- Memastikan kolom ini diizinkan
+        'status_nib',
         'nomor_kbli',
         'dokumen_legalitas_path',
         'latitude',
@@ -35,8 +35,13 @@ class Umkm extends Model
     {
         return $this->belongsTo(Kelurahan::class);
     }
-    
-    // Jika Anda masih memiliki relasi ke kecamatan di model ini,
-    // sebaiknya dihapus karena relasi yang benar adalah melalui Kelurahan.
-    // public function kecamatan() { ... }
+
+    /**
+     * ▼▼▼ TAMBAHKAN METODE INI ▼▼▼
+     * Relasi ke program-program yang diikuti oleh UMKM ini.
+     */
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'program_umkm');
+    }
 }
