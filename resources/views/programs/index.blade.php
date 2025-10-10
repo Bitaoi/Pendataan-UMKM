@@ -1,9 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+</style>
+
 <div class="container">
     <h1>Manajemen Program Pembinaan</h1>
-    <a href="{{ route('programs.create') }}" class="btn btn-primary mb-3">Buat Program Baru</a>
+
+    {{-- Tombol "Buat Program Baru" dengan sintaks yang sudah diperbaiki --}}
+    <a href="{{ route('programs.create') }}" class="btn btn-lemon mb-3">Buat Program Baru</a>
+
     <table class="table table-bordered">
         <thead>
             <tr>

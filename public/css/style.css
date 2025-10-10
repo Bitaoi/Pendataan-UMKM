@@ -1,23 +1,30 @@
+/* ============================================================
+   PALET WARNA UTAMA
+   ============================================================ */
 :root {
     --anti-flesh-white: #EFEFEF;
     --lemon-lime: #EBFF40;
     --dark-green: #203627;
-    --sky-blue: #9DC4D5;
+    --sky-blue: #2100faa1; /* <-- Menjadi electric blue */
 }
 
-/* Text Colors */
+/* ============================================================
+   TEXT COLORS
+   ============================================================ */
 .text-anti-flesh-white { color: var(--anti-flesh-white) !important; }
 .text-lemon-lime { color: var(--lemon-lime) !important; }
-.text-dark-green { color: var(--dark-green) !important; }
 .text-sky-blue { color: var(--sky-blue) !important; }
 
-/* Background Colors */
+/* ============================================================
+   BACKGROUND COLORS
+   ============================================================ */
 .bg-anti-flesh-white { background-color: var(--anti-flesh-white) !important; }
 .bg-lemon-lime { background-color: var(--lemon-lime) !important; }
-.bg-dark-green { background-color: var(--dark-green) !important; }
 .bg-sky-blue { background-color: var(--sky-blue) !important; }
 
-/* Buttons */
+/* ============================================================
+   BUTTONS
+   ============================================================ */
 .btn-lemon-lime {
     background-color: var(--lemon-lime);
     color: var(--dark-green);
@@ -25,31 +32,15 @@
     border: none;
 }
 .btn-lemon-lime:hover {
-    background-color: #d4e635;
-}
-
-/* Navbar */
-.navbar-custom {
-    background-color: var(--dark-green);
-}
-.navbar-custom .nav-link {
-    color: var(--anti-flesh-white) !important;
-}
-.navbar-custom .nav-link:hover {
-    color: var(--lemon-lime) !important;
-}
-.navbar-custom .navbar-brand {
-    color: var(--lemon-lime) !important;
-    font-weight: bold;
+    background-color: #d4e635; /* versi lebih gelap saat hover */
 }
 
 /* Tombol utama (primary) */
 .btn-primary {
-    background-color: var(--dark-green);
-    border-color: var(--dark-green);
+    background-color: var(--sky-blue);
+    border-color: var(--sky-blue);
     color: var(--lemon-lime);
 }
-
 .btn-primary:hover {
     background-color: var(--lemon-lime);
     border-color: var(--lemon-lime);
@@ -62,7 +53,6 @@
     border-color: var(--lemon-lime);
     color: var(--dark-green);
 }
-
 .btn-danger:hover {
     background-color: var(--dark-green);
     border-color: var(--dark-green);
@@ -73,11 +63,41 @@
 .btn-info {
     background-color: var(--sky-blue);
     border-color: var(--sky-blue);
-    color: var(--dark-green);
+    color: var(--anti-flesh-white);
 }
-
 .btn-info:hover {
     background-color: var(--dark-green);
     border-color: var(--dark-green);
-    color: var(--sky-blue);
+    color: var(--lemon-lime);
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar-custom {
+    background-color: var(--sky-blue) !important;
+}
+
+.navbar-custom .navbar-brand {
+    color: var(--lemon-lime) !important;
+    font-weight: bold;
+}
+
+.navbar-custom .nav-link {
+    color: var(--anti-flesh-white) !important;
+    transition: color 0.3s ease;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+    color: var(--lemon-lime) !important;
+}
+
+/* ============================================================
+   LAINNYA
+   ============================================================ */
+body {
+    background-color: var(--anti-flesh-white);
+    color: var(--dark-green);
+    font-family: 'Poppins', sans-serif;
 }

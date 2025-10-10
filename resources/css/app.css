@@ -1,51 +1,71 @@
-/* 1. Import Bootstrap Terlebih Dahulu */
+/* 1. Import Font Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+/* 2. Import Bootstrap */
+/* Pastikan Anda sudah menjalankan `npm install bootstrap` */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
-/* 2. Definisikan ulang variabel warna Bootstrap */
+/* 3. Definisikan Ulang Variabel Warna Global */
 :root {
-    /* Warna Utama (Primary) -> Sky Blue */
-    --bs-primary: #9DC4D5;
+    /* Palet Warna Kustom Anda */
+    --custom-sky-blue: #9DC4D5;
+    --custom-dark-green: #203627;
+    --custom-lemon-lime: #EBFF40;
+    --custom-anti-flesh-white: #EFEFEF;
+    --custom-orange: #f58231;
+    --custom-red: #e6194B;
+
+    /* Menimpa Variabel Warna Bootstrap */
+    --bs-primary: var(--custom-sky-blue);
     --bs-primary-rgb: 157, 196, 213;
 
-    /* Warna Sekunder (Secondary) -> Bisa kita gunakan Dark Green untuk kontras */
-    --bs-secondary: #203627;
+    --bs-secondary: var(--custom-dark-green);
     --bs-secondary-rgb: 32, 54, 39;
 
-    /* Warna untuk tombol "Success" atau "Info" -> Lemon Lime */
-    --bs-info: #E8FF40;
+    --bs-info: var(--custom-lemon-lime);
     --bs-info-rgb: 232, 255, 64;
 
-    /* Warna untuk tombol "Warning" atau "Edit" */
-    --bs-warning: #f58231; /* Menggunakan warna oranye yang kontras */
+    --bs-warning: var(--custom-orange);
     --bs-warning-rgb: 245, 130, 49;
 
-    /* Warna untuk tombol "Danger" atau "Hapus" */
-    --bs-danger: #e6194B; /* Menggunakan warna merah yang kontras */
+    --bs-danger: var(--custom-red);
     --bs-danger-rgb: 230, 25, 75;
+    
+    /* Mengubah Warna Dasar Body */
+    --bs-body-bg: var(--custom-anti-flesh-white);
+    --bs-body-color: var(--custom-dark-green);
 
-    /* Warna Latar Belakang Body -> Anti-Flesh White */
-    --bs-body-bg: #EFEFEF;
-
-    /* Warna Teks Utama -> Dark Green */
-    --bs-body-color: #203627;
+    /* Mengubah Warna Link Default */
+    --bs-link-color: var(--custom-dark-green);
+    --bs-link-hover-color: var(--custom-sky-blue);
 }
 
-/* 3. Kustomisasi Navbar */
-/* Kita akan membuat navbar menggunakan Dark Green sebagai latar belakang */
+/* 4. Terapkan Style Global ke Body */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+/* 5. Kustomisasi Navbar */
 .navbar-custom {
-    background-color: #203627; /* Dark Green */
+    background-color: var(--custom-dark-green);
 }
 
-/* Mengubah warna teks dan link di navbar menjadi putih agar terbaca */
 .navbar-custom .navbar-brand,
-.navbar-custom .nav-link {
-    color: #EFEFEF; /* Anti-Flesh White */
+.navbar-custom .nav-link,
+.navbar-custom .nav-link.active {
+    color: var(--custom-anti-flesh-white) !important;
 }
 
-/* Mengubah warna tombol logout di navbar */
+.navbar-custom .nav-link:hover {
+    color: var(--custom-lemon-lime) !important;
+}
+
+/* Tombol Logout khusus di Navbar */
 .navbar-custom .btn-logout {
-    background-color: #E8FF40; /* Lemon Lime */
-    color: #203627; /* Dark Green */
+    background-color: var(--custom-lemon-lime);
+    color: var(--custom-dark-green);
     font-weight: bold;
     border: none;
 }
