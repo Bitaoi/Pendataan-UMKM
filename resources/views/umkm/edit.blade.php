@@ -24,6 +24,17 @@
                     <h4 class="mb-0 fw-bold">Edit Data UMKM: {{ $umkm->nama_usaha }}</h4>
                 </div>
                 <div class="card-body p-4">
+                    {{-- Menampilkan error validasi jika ada --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('umkm.update', $umkm->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
@@ -38,12 +49,10 @@
                                     <input type="text" class="form-control" id="nama_pemilik" name="nama_pemilik" value="{{ old('nama_pemilik', $umkm->nama_pemilik) }}" required>
                                 </div>
                                 <div class="mb-3">
-                                    {{-- PERBAIKAN: Menggunakan 'nomor_telepon' sesuai database --}}
                                     <label for="nomor_telepon" class="form-label">Kontak (No. HP/Telepon)</label>
                                     <input type="text" class="form-control" id="nomor_telepon" name="nomor_telepon" value="{{ old('nomor_telepon', $umkm->nomor_telepon) }}" required>
                                 </div>
                                 <div class="mb-3">
-                                    {{-- PERBAIKAN: Menggunakan 'alamat_lengkap' sesuai database --}}
                                     <label for="alamat_lengkap" class="form-label">Alamat Lengkap Usaha</label>
                                     <textarea class="form-control" id="alamat_lengkap" name="alamat_lengkap" rows="3" required>{{ old('alamat_lengkap', $umkm->alamat_lengkap) }}</textarea>
                                 </div>
@@ -52,7 +61,7 @@
                                     <select class="form-select" id="kecamatan_id" name="kecamatan_id" required>
                                         <option disabled value="">Pilih Kecamatan</option>
                                         @foreach($kecamatans as $kecamatan)
-                                            {{-- PERBAIKAN: Mengambil ID Kecamatan dari relasi kelurahan --}}
+                                            {{-- Gunakan data dari relasi untuk 'selected' --}}
                                             <option value="{{ $kecamatan->id }}" {{ old('kecamatan_id', $umkm->kelurahan->kecamatan_id ?? '') == $kecamatan->id ? 'selected' : '' }}>
                                                 {{ $kecamatan->nama_kecamatan }}
                                             </option>
@@ -62,15 +71,28 @@
                                 <div class="mb-3">
                                     <label for="kelurahan_id" class="form-label">Kelurahan</label>
                                     <select class="form-select" id="kelurahan_id" name="kelurahan_id" required>
+                                        {{-- Akan diisi oleh JavaScript --}}
                                         <option value="" selected disabled>Pilih Kecamatan Terlebih Dahulu</option>
                                     </select>
                                 </div>
+
+                                {{-- ▼▼▼ INI ADALAH TAMBAHAN BARU (SESUAI PERMINTAAN) ▼▼▼ --}}
+                                <div class="mb-3">
+                                    <label for="kategori_umkm" class="form-label">Kategori UMKM</label>
+                                    <select class="form-select" id="kategori_umkm" name="kategori_umkm" required>
+                                        <option selected disabled value="">Pilih Kategori...</option>
+                                        {{-- Periksa nilai 'old' atau nilai dari database $umkm --}}
+                                        <option value="makanan_minuman" {{ old('kategori_umkm', $umkm->kategori_umkm) == 'makanan_minuman' ? 'selected' : '' }}>Makanan / Minuman</option>
+                                        <option value="produk_kerajinan" {{ old('kategori_umkm', $umkm->kategori_umkm) == 'produk_kerajinan' ? 'selected' : '' }}>Produk / Kerajinan</option>
+                                    </select>
+                                </div>
+                                {{-- ▲▲▲ AKHIR TAMBAHAN BARU ▲▲▲ --}}
+
                                 <div class="mb-3">
                                     <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
-                                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha', $umkm->sektor_usaha) }}" required>
+                                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha', $umkm->sektor_usaha) }}" required placeholder="Contoh: Kuliner Khas, Kerajinan Tangan, dll.">
                                 </div>
                                 <div class="mb-3">
-                                    {{-- PERBAIKAN: Menggunakan 'status_nib' dan dropdown --}}
                                     <label for="status_nib" class="form-label">Status NIB</label>
                                     <select class="form-select" id="status_nib" name="status_nib" required>
                                         <option disabled value="">Pilih Status...</option>
@@ -78,6 +100,10 @@
                                         <option value="Belum Ada" {{ old('status_nib', $umkm->status_nib) == 'Belum Ada' ? 'selected' : '' }}>Belum Ada</option>
                                         <option value="Sedang Proses" {{ old('status_nib', $umkm->status_nib) == 'Sedang Proses' ? 'selected' : '' }}>Sedang Proses</option>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="nomor_kbli" class="form-label">Nomor KBLI (Opsional)</label>
+                                    <input type="text" class="form-control" id="nomor_kbli" name="nomor_kbli" value="{{ old('nomor_kbli', $umkm->nomor_kbli) }}">
                                 </div>
                             </div>
 
@@ -103,8 +129,13 @@
                                 <div class="mb-3">
                                     <label for="dokumen_legalitas" class="form-label">Upload Dokumen Baru (Opsional)</label>
                                     <input class="form-control" type="file" id="dokumen_legalitas" name="dokumen_legalitas">
-                                    @if($umkm->dokumen_legalitas)
-                                        <small class="text-muted mt-1 d-block">Dokumen saat ini: <a href="{{ asset('storage/' . $umkm->dokumen_legalitas) }}" target="_blank">Lihat Dokumen</a></small>
+                                    <small class="text-muted">Kosongkan jika tidak ingin mengubah dokumen.</small>
+                                    
+                                    {{-- PERBAIKAN: Gunakan nama kolom 'dokumen_legalitas_path' dari database --}}
+                                    @if($umkm->dokumen_legalitas_path)
+                                        <small class="text-muted mt-1 d-block">Dokumen saat ini: <a href="{{ asset('storage/' . $umkm->dokumen_legalitas_path) }}" target="_blank">Lihat Dokumen</a></small>
+                                    @else
+                                         <small class="text-muted mt-1 d-block">Dokumen saat ini: Tidak ada.</small>
                                     @endif
                                 </div>
                             </div>
@@ -126,6 +157,8 @@
 {{-- Library JavaScript untuk Peta --}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.umd.js"></script>
+{{-- Tambahkan jQuery jika belum ada di layout utama, untuk AJAX Kelurahan --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -135,9 +168,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const alamatInput = document.getElementById('alamat_lengkap');
 
     // Ambil koordinat awal dari data UMKM yang diedit.
-    // Jika tidak ada, gunakan lokasi default.
-    const initialLat = {{ old('latitude', $umkm->latitude ?? -7.8225) }};
-    const initialLng = {{ old('longitude', $umkm->longitude ?? 112.0119) }};
+    // Jika tidak ada, gunakan lokasi default (misal: Kediri).
+    // Pastikan nilai default adalah angka
+    const initialLat = parseFloat("{{ old('latitude', $umkm->latitude ?? -7.8225) }}") || -7.8225;
+    const initialLng = parseFloat("{{ old('longitude', $umkm->longitude ?? 112.0119) }}") || 112.0119;
     const initialZoom = {{ $umkm->latitude ? 16 : 13 }}; // Zoom lebih dekat jika lokasi sudah ada
 
     // Inisialisasi Peta
@@ -153,22 +187,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     map.addControl(searchControl);
 
-    // Fungsi Reverse Geocoding
+    // Fungsi Reverse Geocoding (Opsional, tapi membantu)
     function reverseGeocode(latlng) {
-        alamatInput.value = 'Mencari alamat...';
-        const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`;
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                alamatInput.value = (data && data.display_name) ? data.display_name : 'Alamat tidak ditemukan.';
-            });
+        // Hanya update alamat jika user tidak sedang mengetik manual
+        if (document.activeElement !== alamatInput) {
+            alamatInput.value = 'Mencari alamat...';
+            const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    alamatInput.value = (data && data.display_name) ? data.display_name : 'Alamat tidak ditemukan.';
+                });
+        }
     }
 
     // Fungsi update data lokasi
     function updateLocationData(latlng) {
         latInput.value = latlng.lat.toFixed(7);
         lngInput.value = latlng.lng.toFixed(7);
-        reverseGeocode(latlng);
+        // reverseGeocode(latlng); // Aktifkan jika ingin alamat terisi otomatis
     }
 
     // Event Listener untuk interaksi peta
@@ -186,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Logika Dropdown Kecamatan & Kelurahan ---
     const kecamatanSelect = document.getElementById('kecamatan_id');
     const kelurahanSelect = document.getElementById('kelurahan_id');
+    // Ambil ID kelurahan yang sedang diedit
     const selectedKelurahanId = '{{ old('kelurahan_id', $umkm->kelurahan_id) }}';
 
     function fetchKelurahan(kecamatanId) {
@@ -193,15 +231,21 @@ document.addEventListener('DOMContentLoaded', function() {
             kelurahanSelect.innerHTML = '<option value="">Pilih Kecamatan Dulu</option>';
             return;
         }
+        // Pastikan URL API Anda benar
         fetch(`/api/kelurahan/${kecamatanId}`)
             .then(response => response.json())
             .then(data => {
                 let options = '<option selected disabled value="">Pilih Kelurahan...</option>';
                 data.forEach(kelurahan => {
+                    // Cek apakah kelurahan ini adalah kelurahan yang sedang dipilih
                     const isSelected = kelurahan.id == selectedKelurahanId ? 'selected' : '';
                     options += `<option value="${kelurahan.id}" ${isSelected}>${kelurahan.nama_kelurahan}</option>`;
                 });
                 kelurahanSelect.innerHTML = options;
+            })
+            .catch(error => {
+                console.error('Error fetching kelurahan:', error);
+                kelurahanSelect.innerHTML = '<option value="">Gagal memuat kelurahan</option>';
             });
     }
     

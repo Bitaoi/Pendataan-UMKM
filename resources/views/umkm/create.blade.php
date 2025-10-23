@@ -67,6 +67,25 @@
                         <option selected disabled value="">Pilih Kecamatan terlebih dahulu</option>
                     </select>
                 </div>
+
+                {{-- ▼▼▼ TAMBAHKAN DROPDOWN KATEGORI DI SINI ▼▼▼ --}}
+                <div class="mb-3">
+                    <label for="kategori_umkm" class="form-label">Kategori UMKM</label>
+                    <select class="form-select" id="kategori_umkm" name="kategori_umkm" required>
+                        <option selected disabled value="">Pilih Kategori...</option>
+                        <option value="makanan_minuman" {{ old('kategori_umkm') == 'makanan_minuman' ? 'selected' : '' }}>Makanan / Minuman</option>
+                        <option value="produk_kerajinan" {{ old('kategori_umkm') == 'produk_kerajinan' ? 'selected' : '' }}>Produk / Kerajinan</option>
+                        {{-- Tambahkan kategori lain jika perlu --}}
+                    </select>
+                </div>
+                {{-- ▲▲▲ AKHIR TAMBAHAN DROPDOWN KATEGORI ▲▲▲ --}}
+
+
+                <div class="mb-3">
+                    <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
+                    <input type="text" class="form-control" id="sektor_usaha" name="sektor_usaha" value="{{ old('sektor_usaha') }}" required placeholder="Contoh: Kuliner Khas, Kerajinan Tangan, Fashion, Jasa, dll.">
+                    <div class="form-text">Jelaskan lebih spesifik jenis usaha Anda.</div>
+                </div>
                 
                 {{-- ▼▼▼ FIELD YANG HILANG DITAMBAHKAN KEMBALI DI SINI ▼▼▼ --}}
                 <div class="mb-3">

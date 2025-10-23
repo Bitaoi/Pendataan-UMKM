@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Umkm;
 use App\Models\Kecamatan;
+use App\Models\Kelurahan; // Pastikan Kelurahan di-import
 use App\Models\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon; // Import Carbon untuk manipulasi tanggal
 
 class DashboardController extends Controller
 {
@@ -18,74 +20,102 @@ class DashboardController extends Controller
         // =====================================================================
         // BAGIAN 1: DATA UNTUK PETA INTERAKTIF DAN FILTERNYA
         // =====================================================================
-        $queryPeta = Umkm::query()->whereNotNull('latitude')->whereNotNull('longitude');
+        
+        // Mulai query dasar untuk peta
+        $queryPeta = Umkm::query()
+                        ->whereNotNull('latitude')
+                        ->whereNotNull('longitude')
+                        ->where('latitude', '!=', '') // Tambahan keamanan data
+                        ->where('longitude', '!=', ''); // Tambahan keamanan data
 
+        // Filter Sektor Usaha
         if ($request->filled('sektor_usaha')) {
             $queryPeta->where('sektor_usaha', $request->sektor_usaha);
         }
-        // Catatan: Pastikan kolom kecamatan_id dan kelurahan_id ada di tabel umkms
-        if ($request->filled('kecamatan_id')) {
-            $queryPeta->whereHas('kelurahan', function ($q) use ($request) {
-                $q->where('kecamatan_id', $request->kecamatan_id);
+
+        // ▼▼▼ PERBAIKAN LOGIKA FILTER KECAMATAN & KELURAHAN (Request 3) ▼▼▼
+        $selectedKecamatanId = $request->input('kecamatan_id');
+        $selectedKelurahanId = $request->input('kelurahan_id');
+
+        if ($selectedKelurahanId) {
+            // Jika kelurahan dipilih, langsung filter berdasarkan kelurahan_id.
+            // Ini adalah filter yang paling spesifik.
+            $queryPeta->where('kelurahan_id', $selectedKelurahanId);
+        } elseif ($selectedKecamatanId) {
+            // Jika HANYA kecamatan yang dipilih (kelurahan tidak),
+            // filter berdasarkan semua kelurahan di dalam kecamatan itu.
+            $queryPeta->whereHas('kelurahan', function ($q) use ($selectedKecamatanId) {
+                $q->where('kecamatan_id', $selectedKecamatanId);
             });
         }
-        if ($request->filled('kelurahan_id')) {
-            $queryPeta->where('kelurahan_id', $request->kelurahan_id);
-        }
-        // Catatan: Pastikan kolom status_legalitas ada di tabel umkms
-        if ($request->filled('status_nib')) {
-             $queryPeta->where('status_nib', $request->status_nib);
+        // ▲▲▲ AKHIR PERBAIKAN LOGIKA FILTER ▲▲▲
+
+        // Filter Status NIB (dari 'status_legalitas' form)
+        if ($request->filled('status_legalitas')) {
+            if ($request->status_legalitas == 'legal') {
+                $queryPeta->where(function ($q) {
+                    $q->whereNotNull('status_nib')->where('status_nib', '!=', '');
+                });
+            } elseif ($request->status_legalitas == 'illegal') {
+                $queryPeta->where(function ($q) {
+                    $q->whereNull('status_nib')->orWhere('status_nib', '=', '');
+                });
+            }
         }
         
-        $locations = $queryPeta->get();
-        $sectors = Umkm::select('sektor_usaha')->distinct()->orderBy('sektor_usaha')->pluck('sektor_usaha');
+        // Ambil data lokasi (hanya kolom yang diperlukan untuk peta)
+        $locations = $queryPeta->get(['id', 'nama_usaha', 'latitude', 'longitude']);
+
+        // Data untuk dropdown filter
+        $sectors = Umkm::select('sektor_usaha')->whereNotNull('sektor_usaha')->where('sektor_usaha', '!=', '')->distinct()->orderBy('sektor_usaha')->pluck('sektor_usaha');
         $kecamatans = Kecamatan::orderBy('nama_kecamatan')->get();
 
         // =====================================================================
-        // BAGIAN 2: DATA UNTUK KARTU STATISTIK & GRAFIK RINGKASAN
+        // BAGIAN 2: DATA UNTUK STATISTIK RINGKASAN
         // =====================================================================
         
-        // Statistik Total UMKM
         $totalUmkm = Umkm::count();
 
-        // Statistik per Sektor
-        $sektorData = Umkm::select('sektor_usaha', DB::raw('count(*) as total'))
-                         ->groupBy('sektor_usaha')
-                         ->pluck('total', 'sektor_usaha');
-
-        // Statistik per Kecamatan
-        $kecamatanData = Kecamatan::withCount(['kelurahans as total_umkm' => function ($query) {
-                                $query->select(DB::raw('count(distinct umkms.id)'))
-                                      ->join('umkms', 'kelurahans.id', '=', 'umkms.kelurahan_id');
-                            }])
-                            ->get()
-                            ->pluck('total_umkm', 'nama_kecamatan');
-
         // Statistik Status NIB
-        $nibData = Umkm::select('status_nib', DB::raw('count(*) as total'))
-                      ->groupBy('status_nib')
-                      ->pluck('total', 'status_nib');
-        
-        // Statistik Program Pembinaan Terpopuler
-        $programData = Program::withCount('pesertas')
-                              ->orderBy('pesertas_count', 'desc')
-                              ->take(5) // Ambil 5 program terpopuler
-                              ->get();
+        $nibData = Umkm::select(DB::raw('CASE WHEN status_nib IS NULL OR status_nib = "" OR status_nib = "Belum Ada" THEN "Tanpa NIB" ELSE "Dengan NIB" END as status_label'), DB::raw('count(*) as total'))
+                    ->groupBy('status_label')
+                    ->pluck('total', 'status_label');
 
+        // Statistik Program Pembinaan Terpopuler
+        $programData = Program::withCount('pesertas') // Asumsi relasi 'pesertas' ada di model Program
+                                ->orderBy('pesertas_count', 'desc')
+                                ->take(5)
+                                ->get();
+                                
         // =====================================================================
         // BAGIAN 3: DATA UNTUK GRAFIK PERTUMBUHAN UMKM (12 BULAN TERAKHIR)
         // =====================================================================
-        $growthData = Umkm::select(
-                DB::raw('COUNT(id) as count'),
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month")
-            )
-            ->where('created_at', '>=', DB::raw('NOW() - INTERVAL 12 MONTH'))
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get();
+        
+        // Tentukan rentang 12 bulan (dari 11 bulan lalu s/d bulan ini)
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now()->endOfMonth();
 
-        $chartLabels = $growthData->pluck('month');
-        $chartValues = $growthData->pluck('count');
+        // Ambil data dari DB
+        $growthDataRaw = Umkm::select(
+                DB::raw('COUNT(id) as count'),
+                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month_year")
+            )
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('month_year')
+            ->orderBy('month_year', 'asc')
+            ->pluck('count', 'month_year'); // Hasil: ['2024-01' => 5, '2024-03' => 2]
+
+        // Buat array 12 bulan lengkap dengan nilai default 0
+        $chartData = [];
+        $currentDate = $startDate->copy();
+        while ($currentDate <= $endDate) {
+            $monthKey = $currentDate->format('Y-m');
+            $chartData[$monthKey] = $growthDataRaw->get($monthKey, 0); // Ambil data dari DB, atau 0 jika tidak ada
+            $currentDate->addMonth();
+        }
+
+        $chartLabels = array_keys($chartData);
+        $chartValues = array_values($chartData);
         
         // =====================================================================
         // MENGIRIM SEMUA DATA KE VIEW
@@ -96,11 +126,11 @@ class DashboardController extends Controller
             'kecamatans', 
             'chartLabels', 
             'chartValues',
-            'totalUmkm',
-            'sektorData',
-            'kecamatanData',
-            'nibData',
+            // 'totalUmkm', // Anda belum menggunakan ini di blade
+            // 'nibData', // Anda belum menggunakan ini di blade
             'programData'
+            // Kirim ID terpilih agar filter bisa menampilkan kelurahan yang benar
+            ,'selectedKecamatanId' 
         ));
     }
 }

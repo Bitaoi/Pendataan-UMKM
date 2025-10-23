@@ -20,6 +20,7 @@ class Umkm extends Model
         'kelurahan_id',
         'alamat_lengkap',
         'nomor_telepon',
+        'kategori_umkm',
         'sektor_usaha',
         'status_nib',
         'nomor_kbli',

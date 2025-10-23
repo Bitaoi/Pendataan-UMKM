@@ -44,8 +44,8 @@ class UmkmController extends Controller
             'status_nib' => 'required|in:Sudah Ada,Belum Ada,Sedang Proses',
             'kelurahan_id' => 'required|exists:kelurahans,id',
             'dokumen_legalitas' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
+            'latitude' => 'nullable|numeric|between:-98,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'nomor_kbli' => 'nullable|string',
         ]);
 
@@ -54,6 +54,7 @@ class UmkmController extends Controller
             $path = $request->file('dokumen_legalitas')->store('dokumen-legalitas', 'public');
             // Simpan path ke kolom yang benar di database
             $validatedData['dokumen_legalitas_path'] = $path;
+            unset($validatedData['dokumen_legalitas']);
         }
 
         // Hanya buat data dari input yang sudah divalidasi (lebih aman)
@@ -89,6 +90,7 @@ class UmkmController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'nomor_kbli' => 'nullable|string',
+            'kategori_umkm' => 'required|string|in:makanan_minuman,produk_kerajinan',
         ]);
 
         // Cek jika ada file dokumen baru yang di-upload
