@@ -18,16 +18,16 @@
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-12"> {{-- Dibuat lebih lebar untuk mengakomodasi 2 kolom --}}
+        <div class="col-md-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
                     <h4 class="mb-0 fw-bold">Edit Data UMKM: {{ $umkm->nama_usaha }}</h4>
                 </div>
                 <div class="card-body p-4">
-                    {{-- Menampilkan error validasi jika ada --}}
+
                     @if ($errors->any())
                         <div class="alert alert-danger">
-                            <ul class="mb-0">
+                            <ul>
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
@@ -61,7 +61,6 @@
                                     <select class="form-select" id="kecamatan_id" name="kecamatan_id" required>
                                         <option disabled value="">Pilih Kecamatan</option>
                                         @foreach($kecamatans as $kecamatan)
-                                            {{-- Gunakan data dari relasi untuk 'selected' --}}
                                             <option value="{{ $kecamatan->id }}" {{ old('kecamatan_id', $umkm->kelurahan->kecamatan_id ?? '') == $kecamatan->id ? 'selected' : '' }}>
                                                 {{ $kecamatan->nama_kecamatan }}
                                             </option>
@@ -71,22 +70,30 @@
                                 <div class="mb-3">
                                     <label for="kelurahan_id" class="form-label">Kelurahan</label>
                                     <select class="form-select" id="kelurahan_id" name="kelurahan_id" required>
-                                        {{-- Akan diisi oleh JavaScript --}}
                                         <option value="" selected disabled>Pilih Kecamatan Terlebih Dahulu</option>
                                     </select>
                                 </div>
 
-                                {{-- ▼▼▼ INI ADALAH TAMBAHAN BARU (SESUAI PERMINTAAN) ▼▼▼ --}}
+                                {{-- ▼▼▼ KODE BARU DIMULAI DI SINI ▼▼▼ --}}
                                 <div class="mb-3">
                                     <label for="kategori_umkm" class="form-label">Kategori UMKM</label>
                                     <select class="form-select" id="kategori_umkm" name="kategori_umkm" required>
                                         <option selected disabled value="">Pilih Kategori...</option>
-                                        {{-- Periksa nilai 'old' atau nilai dari database $umkm --}}
                                         <option value="makanan_minuman" {{ old('kategori_umkm', $umkm->kategori_umkm) == 'makanan_minuman' ? 'selected' : '' }}>Makanan / Minuman</option>
                                         <option value="produk_kerajinan" {{ old('kategori_umkm', $umkm->kategori_umkm) == 'produk_kerajinan' ? 'selected' : '' }}>Produk / Kerajinan</option>
                                     </select>
                                 </div>
-                                {{-- ▲▲▲ AKHIR TAMBAHAN BARU ▲▲▲ --}}
+
+                                <div class="mb-3" id="status-halal-wrapper" style="display: none;">
+                                    <label for="status_halal" class="form-label">Status Kehalalan</label>
+                                    <select class="form-select" id="status_halal" name="status_halal">
+                                        <option selected disabled value="">Pilih Status...</option>
+                                        <option value="Halal" {{ old('status_halal', $umkm->status_halal) == 'Halal' ? 'selected' : '' }}>Halal</option>
+                                        <option value="Non Halal" {{ old('status_halal', $umkm->status_halal) == 'Non Halal' ? 'selected' : '' }}>Non Halal</option>
+                                        <option value="Sedang Proses" {{ old('status_halal', $umkm->status_halal) == 'Sedang Proses' ? 'selected' : '' }}>Sedang Proses</option>
+                                    </select>
+                                </div>
+                                {{-- ▲▲▲ KODE BARU BERAKHIR DI SINI ▲▲▲ --}}
 
                                 <div class="mb-3">
                                     <label for="sektor_usaha" class="form-label">Sektor Usaha</label>
@@ -130,12 +137,8 @@
                                     <label for="dokumen_legalitas" class="form-label">Upload Dokumen Baru (Opsional)</label>
                                     <input class="form-control" type="file" id="dokumen_legalitas" name="dokumen_legalitas">
                                     <small class="text-muted">Kosongkan jika tidak ingin mengubah dokumen.</small>
-                                    
-                                    {{-- PERBAIKAN: Gunakan nama kolom 'dokumen_legalitas_path' dari database --}}
                                     @if($umkm->dokumen_legalitas_path)
                                         <small class="text-muted mt-1 d-block">Dokumen saat ini: <a href="{{ asset('storage/' . $umkm->dokumen_legalitas_path) }}" target="_blank">Lihat Dokumen</a></small>
-                                    @else
-                                         <small class="text-muted mt-1 d-block">Dokumen saat ini: Tidak ada.</small>
                                     @endif
                                 </div>
                             </div>
@@ -157,58 +160,32 @@
 {{-- Library JavaScript untuk Peta --}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.umd.js"></script>
-{{-- Tambahkan jQuery jika belum ada di layout utama, untuk AJAX Kelurahan --}}
+{{-- jQuery (jika belum ada di layout utama) --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi Elemen Form
+    // ... (Kode Peta dan Geosearch tetap sama) ...
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
     const alamatInput = document.getElementById('alamat_lengkap');
-
-    // Ambil koordinat awal dari data UMKM yang diedit.
-    // Jika tidak ada, gunakan lokasi default (misal: Kediri).
-    // Pastikan nilai default adalah angka
-    const initialLat = parseFloat("{{ old('latitude', $umkm->latitude ?? -7.8225) }}") || -7.8225;
-    const initialLng = parseFloat("{{ old('longitude', $umkm->longitude ?? 112.0119) }}") || 112.0119;
-    const initialZoom = {{ $umkm->latitude ? 16 : 13 }}; // Zoom lebih dekat jika lokasi sudah ada
-
-    // Inisialisasi Peta
+    const initialLat = {{ old('latitude', $umkm->latitude ?? -7.8225) }};
+    const initialLng = {{ old('longitude', $umkm->longitude ?? 112.0119) }};
+    const initialZoom = {{ $umkm->latitude ? 16 : 13 }};
     var map = L.map('map').setView([initialLat, initialLng], initialZoom);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
-
-    // Menambahkan Kotak Pencarian
     const provider = new GeoSearch.OpenStreetMapProvider();
     const searchControl = new GeoSearch.GeoSearchControl({
         provider: provider, style: 'bar', showMarker: false,
         autoClose: true, keepResult: true, searchLabel: 'Cari lokasi...'
     });
     map.addControl(searchControl);
-
-    // Fungsi Reverse Geocoding (Opsional, tapi membantu)
-    function reverseGeocode(latlng) {
-        // Hanya update alamat jika user tidak sedang mengetik manual
-        if (document.activeElement !== alamatInput) {
-            alamatInput.value = 'Mencari alamat...';
-            const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`;
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    alamatInput.value = (data && data.display_name) ? data.display_name : 'Alamat tidak ditemukan.';
-                });
-        }
-    }
-
-    // Fungsi update data lokasi
     function updateLocationData(latlng) {
         latInput.value = latlng.lat.toFixed(7);
         lngInput.value = latlng.lng.toFixed(7);
-        // reverseGeocode(latlng); // Aktifkan jika ingin alamat terisi otomatis
     }
-
-    // Event Listener untuk interaksi peta
     marker.on('dragend', e => updateLocationData(e.target.getLatLng()));
     map.on('click', e => {
         marker.setLatLng(e.latlng);
@@ -220,43 +197,59 @@ document.addEventListener('DOMContentLoaded', function() {
         updateLocationData(latlng);
     });
 
-    // --- Logika Dropdown Kecamatan & Kelurahan ---
-    const kecamatanSelect = document.getElementById('kecamatan_id');
-    const kelurahanSelect = document.getElementById('kelurahan_id');
-    // Ambil ID kelurahan yang sedang diedit
+    // --- Logika Dropdown Kecamatan & Kelurahan (Menggunakan jQuery) ---
+    const kecamatanSelect = $('#kecamatan_id');
+    const kelurahanSelect = $('#kelurahan_id');
     const selectedKelurahanId = '{{ old('kelurahan_id', $umkm->kelurahan_id) }}';
 
     function fetchKelurahan(kecamatanId) {
         if (!kecamatanId) {
-            kelurahanSelect.innerHTML = '<option value="">Pilih Kecamatan Dulu</option>';
+            kelurahanSelect.html('<option value="">Pilih Kecamatan Dulu</option>');
             return;
         }
-        // Pastikan URL API Anda benar
-        fetch(`/api/kelurahan/${kecamatanId}`)
-            .then(response => response.json())
-            .then(data => {
+        $.ajax({
+            url: `/api/kelurahan/${kecamatanId}`,
+            type: 'GET',
+            success: function(data) {
                 let options = '<option selected disabled value="">Pilih Kelurahan...</option>';
                 data.forEach(kelurahan => {
-                    // Cek apakah kelurahan ini adalah kelurahan yang sedang dipilih
                     const isSelected = kelurahan.id == selectedKelurahanId ? 'selected' : '';
                     options += `<option value="${kelurahan.id}" ${isSelected}>${kelurahan.nama_kelurahan}</option>`;
                 });
-                kelurahanSelect.innerHTML = options;
-            })
-            .catch(error => {
-                console.error('Error fetching kelurahan:', error);
-                kelurahanSelect.innerHTML = '<option value="">Gagal memuat kelurahan</option>';
-            });
+                kelurahanSelect.html(options);
+            },
+            error: function() {
+                kelurahanSelect.html('<option value="">Gagal memuat kelurahan</option>');
+            }
+        });
     }
-    
-    // Panggil saat halaman dimuat untuk mengisi daftar kelurahan awal
-    if(kecamatanSelect.value) {
-        fetchKelurahan(kecamatanSelect.value);
+    if (kecamatanSelect.val()) {
+        fetchKelurahan(kecamatanSelect.val());
     }
-
-    kecamatanSelect.addEventListener('change', function() {
+    kecamatanSelect.on('change', function() {
         fetchKelurahan(this.value);
     });
+
+    // ▼▼▼ KODE BARU UNTUK KATEGORI -> STATUS HALAL ▼▼▼
+    const kategoriSelect = document.getElementById('kategori_umkm');
+    const halalWrapper = document.getElementById('status-halal-wrapper');
+    const halalSelect = document.getElementById('status_halal');
+
+    function toggleHalalField() {
+        if (kategoriSelect.value === 'makanan_minuman') {
+            halalWrapper.style.display = 'block';
+            halalSelect.setAttribute('required', 'required');
+        } else {
+            halalWrapper.style.display = 'none';
+            halalSelect.removeAttribute('required');
+            halalSelect.value = ''; // Kosongkan nilai saat disembunyikan
+        }
+    }
+    // Panggil saat halaman dimuat (untuk menangani data yang ada)
+    toggleHalalField();
+    // Panggil saat dropdown kategori diubah
+    kategoriSelect.addEventListener('change', toggleHalalField);
+    // ▲▲▲ AKHIR KODE BARU ▲▲▲
 });
 </script>
 @endpush

@@ -20,7 +20,8 @@ class Umkm extends Model
         'kelurahan_id',
         'alamat_lengkap',
         'nomor_telepon',
-        'kategori_umkm',
+        'kategori_umkm', // <-- TAMBAHKAN INI
+        'status_halal', // <-- TAMBAHKAN INI
         'sektor_usaha',
         'status_nib',
         'nomor_kbli',
@@ -38,7 +39,6 @@ class Umkm extends Model
     }
 
     /**
-     * ▼▼▼ TAMBAHKAN METODE INI ▼▼▼
      * Relasi ke program-program yang diikuti oleh UMKM ini.
      */
     public function programs()
