@@ -34,7 +34,7 @@ class UmkmController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input dengan nama kolom yang sesuai dengan database
+        // Validasi input
         $validatedData = $request->validate([
             'nama_usaha' => 'required|string|max:255',
             'nama_pemilik' => 'required|string|max:255',
@@ -47,17 +47,19 @@ class UmkmController extends Controller
             'latitude' => 'nullable|numeric|between:-98,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'nomor_kbli' => 'nullable|string',
+            // Kolom Baru
+            'kategori_umkm' => 'required|string',
+            'status_halal' => 'nullable|string',
         ]);
 
         // Handle file upload jika ada
         if ($request->hasFile('dokumen_legalitas')) {
             $path = $request->file('dokumen_legalitas')->store('dokumen-legalitas', 'public');
-            // Simpan path ke kolom yang benar di database
             $validatedData['dokumen_legalitas_path'] = $path;
-            unset($validatedData['dokumen_legalitas']);
+            unset($validatedData['dokumen_legalitas']); // Hapus key file asli agar tidak error saat create
         }
 
-        // Hanya buat data dari input yang sudah divalidasi (lebih aman)
+        // Simpan data ke database
         Umkm::create($validatedData);
 
         return redirect()->route('umkm.index')->with('success', 'Data UMKM berhasil ditambahkan!');
@@ -77,7 +79,7 @@ class UmkmController extends Controller
      */
     public function update(Request $request, Umkm $umkm)
     {
-        // Validasi input dengan nama kolom yang sesuai dengan database
+        // Validasi input update
         $validatedData = $request->validate([
             'nama_usaha' => 'required|string|max:255',
             'nama_pemilik' => 'required|string|max:255',
@@ -87,10 +89,12 @@ class UmkmController extends Controller
             'status_nib' => 'required|in:Sudah Ada,Belum Ada,Sedang Proses',
             'kelurahan_id' => 'required|exists:kelurahans,id',
             'dokumen_legalitas' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
+            'latitude' => 'nullable|numeric|between:-98,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'nomor_kbli' => 'nullable|string',
-            'kategori_umkm' => 'required|string|in:makanan_minuman,produk_kerajinan',
+            // Kolom Baru
+            'kategori_umkm' => 'required|string',
+            'status_halal' => 'nullable|string',
         ]);
 
         // Cek jika ada file dokumen baru yang di-upload
@@ -102,9 +106,10 @@ class UmkmController extends Controller
             // Simpan dokumen baru dan dapatkan path-nya
             $path = $request->file('dokumen_legalitas')->store('dokumen-legalitas', 'public');
             $validatedData['dokumen_legalitas_path'] = $path;
+            unset($validatedData['dokumen_legalitas']); // Hapus key file asli
         }
 
-        // Update data UMKM dengan data yang sudah divalidasi
+        // Update data UMKM
         $umkm->update($validatedData);
 
         return redirect()->route('umkm.index')->with('success', 'Data UMKM berhasil diperbarui!');
@@ -115,7 +120,7 @@ class UmkmController extends Controller
      */
     public function destroy(Umkm $umkm)
     {
-        // Hapus dokumen terkait jika ada, menggunakan nama kolom yang benar
+        // Hapus dokumen terkait jika ada
         if ($umkm->dokumen_legalitas_path) {
             Storage::disk('public')->delete($umkm->dokumen_legalitas_path);
         }

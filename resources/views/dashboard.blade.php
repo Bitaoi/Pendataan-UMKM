@@ -1,6 +1,5 @@
 @extends('layouts.app')
 
-{{-- ▼▼▼ SEMUA CSS KHUSUS HALAMAN INI MASUK KE SLOT 'styles' ▼▼▼ --}}
 @section('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
@@ -15,25 +14,34 @@
         height: 60vh; 
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        background-color: #f0f0f0; /* Latar belakang jika peta gagal dimuat */
+        background-color: #f0f0f0; 
     }
     .filter-card, .map-card { margin-bottom: 1.5rem; }
     body { font-family: 'Quicksand', sans-serif; }
-    /* Style untuk tombol aktif */
     .btn-group .btn.active { background-color: #0d6efd; color: white; }
     .btn-group .btn:not(.active) { background-color: #fff; color: #0d6efd; }
-    /* Pesan error */
     .map-error-overlay, .chart-error-overlay {
         display: none; color: #721c24; background-color: #f8d7da;
         border: 1px solid #f5c6cb; border-radius: 8px;
         padding: 20px; text-align: center; font-weight: bold;
     }
+
+    /* --- STYLE BARU UNTUK POPUP --- */
+    .custom-popup .popup-header {
+        font-size: 15px; font-weight: bold; color: #203627;
+        border-bottom: 2px solid #EBFF40; padding-bottom: 5px; margin-bottom: 8px;
+    }
+    .custom-popup table { width: 100%; font-size: 12px; color: #333; }
+    .custom-popup td { padding: 2px 0; vertical-align: top; }
+    .custom-popup .label-col { width: 70px; font-weight: 600; color: #666; }
+    .badge-halal { background-color: #198754; color: white; padding: 1px 5px; border-radius: 4px; font-size: 10px; }
+    .badge-non { background-color: #dc3545; color: white; padding: 1px 5px; border-radius: 4px; font-size: 10px; }
+    .badge-proses { background-color: #ffc107; color: black; padding: 1px 5px; border-radius: 4px; font-size: 10px; }
 </style>
 @endsection
 
-
-{{-- ▼▼▼ KONTEN UTAMA HALAMAN (HTML) MASUK KE SLOT 'content' ▼▼▼ --}}
 @section('content')
+{{-- KONTEN HTML (Sama seperti sebelumnya, tidak perlu diubah) --}}
 <div class="container">
     {{-- FORM FILTER --}}
     <div class="card shadow-sm filter-card">
@@ -62,7 +70,6 @@
                         <label for="kelurahan_id" class="form-label">Kelurahan</label>
                         <select name="kelurahan_id" id="kelurahan_id_filter" class="form-select">
                             <option value="">Semua Kelurahan</option>
-                            {{-- Opsi kelurahan akan diisi oleh JS --}}
                         </select>
                     </div>
                      <div class="col-md-3">
@@ -96,7 +103,6 @@
             </div>
         </div>
         <div class="card-body">
-            {{-- Div untuk menampilkan error jika peta gagal --}}
             <div id="map-error" class="map-error-overlay"></div>
             <div id="map"></div>
         </div>
@@ -110,7 +116,6 @@
                     <h4 class="mb-0 fw-bold">Grafik Pertumbuhan UMKM (12 Bulan Terakhir)</h4>
                 </div>
                 <div class="card-body">
-                    {{-- Div untuk menampilkan error jika grafik gagal --}}
                     <div id="chart-error" class="chart-error-overlay"></div>
                     <canvas id="growthChart" style="height: 300px;"></canvas>
                 </div>
@@ -137,203 +142,147 @@
 </div>
 @endsection
 
-
-{{-- ▼▼▼ SEMUA JAVASCRIPT KHUSUS HALAMAN INI MASUK KE SLOT 'scripts' ▼▼▼ --}}
 @push('scripts')
-{{-- JS Leaflet --}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-{{-- JS Chart --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{{-- jQuery untuk AJAX Kelurahan --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    
-    // =================================================================
-    // KODE GRAFIK PERTUMBUHAN (Request 1)
-    // =================================================================
+    // --- Kode Grafik (Tetap Sama) ---
     const chartCanvas = document.getElementById('growthChart');
-    const chartErrorDiv = document.getElementById('chart-error');
     try {
         const chartLabels = @json($chartLabels);
         const chartValues = @json($chartValues);
-
-        if (!chartLabels || !chartValues || chartLabels.length === 0) {
-            throw new Error('Data grafik tidak tersedia.');
+        if (chartLabels && chartValues) {
+            new Chart(chartCanvas, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Jumlah UMKM Baru',
+                        data: chartValues,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
         }
+    } catch (e) { console.error("Grafik error", e); }
 
-        // Sembunyikan error dan tampilkan canvas jika ada data
-        chartErrorDiv.style.display = 'none';
-        chartCanvas.style.display = 'block';
-
-        new Chart(chartCanvas, {
-            type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: 'Jumlah UMKM Baru',
-                    data: chartValues,
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    fill: true,
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    } catch (e) {
-        console.error("Gagal memuat grafik:", e);
-        chartErrorDiv.textContent = 'Gagal memuat data grafik: ' + e.message;
-        chartErrorDiv.style.display = 'block';
-        chartCanvas.style.display = 'none';
-    }
-
-    // =================================================================
-    // KODE PETA LEAFLET (Request 1)
-    // =================================================================
+    // ▼▼▼ KODE PETA YANG DIPERBARUI ▼▼▼
     const mapElement = document.getElementById('map');
-    const mapErrorDiv = document.getElementById('map-error');
     try {
         const locations = @json($locations);
         
-        if (typeof L === 'undefined') {
-            throw new Error('Library Leaflet (L) tidak ditemukan. Periksa koneksi internet atau CDN.');
-        }
+        if (typeof L !== 'undefined' && locations.length > 0) {
+            var map = L.map(mapElement).setView([-7.8225, 112.0118], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19, attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
 
-        var map = L.map(mapElement).setView([-7.8225, 112.0118], 13); // Center di Kediri
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
+            var standardLayer = L.layerGroup();
+            var clusterLayer = L.markerClusterGroup();
+            var heatPoints = [];
 
-        // Cek jika data lokasi kosong
-        if (!locations || locations.length === 0) {
-             mapErrorDiv.textContent = 'Tidak ada data lokasi UMKM untuk ditampilkan (sesuai filter).';
-             mapErrorDiv.style.display = 'block';
-             mapElement.style.height = '100px'; // Kecilkan peta jika kosong
-             return; // Hentikan eksekusi peta
-        }
+            locations.forEach(function(loc) {
+                let lat = parseFloat(loc.latitude);
+                let lng = parseFloat(loc.longitude);
 
-        // Sembunyikan error jika data ada
-        mapErrorDiv.style.display = 'none';
-        
-        var standardLayer = L.layerGroup();
-        var clusterLayer = L.markerClusterGroup();
-        var heatPoints = [];
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    let latLng = [lat, lng];
+                    
+                    // --- LOGIKA POPUP BARU ---
+                    let kategori = loc.kategori_umkm ? loc.kategori_umkm.toLowerCase() : '';
+                    let rowHalal = '';
 
-        locations.forEach(function(location) {
-            // Pastikan lat/lng valid
-            let lat = parseFloat(location.latitude);
-            let lng = parseFloat(location.longitude);
+                    if (kategori.includes('makanan') || kategori.includes('minuman')) {
+                        let status = loc.status_halal || 'Belum Info';
+                        let badgeClass = 'badge-proses';
+                        if (status === 'Halal') badgeClass = 'badge-halal';
+                        if (status === 'Non Halal') badgeClass = 'badge-non';
+                        
+                        rowHalal = `
+                            <tr>
+                                <td class="label-col">Kehalalan</td>
+                                <td>: <span class="${badgeClass}">${status}</span></td>
+                            </tr>`;
+                    }
 
-            if (!isNaN(lat) && !isNaN(lng)) {
-                let latLng = [lat, lng];
-                let popupContent = `<b>${location.nama_usaha || 'Nama Usaha'}</b>`;
-                
-                standardLayer.addLayer(L.marker(latLng).bindPopup(popupContent));
-                clusterLayer.addLayer(L.marker(latLng).bindPopup(popupContent));
-                heatPoints.push(latLng);
-            }
-        });
-        
-        var heatmapLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15 });
+                    let popupContent = `
+                        <div class="custom-popup">
+                            <div class="popup-header">${loc.nama_usaha || 'UMKM'}</div>
+                            <table>
+                                <tr><td class="label-col">Pemilik</td><td>: ${loc.nama_pemilik || '-'}</td></tr>
+                                <tr><td class="label-col">Sektor</td><td>: ${loc.sektor_usaha || '-'}</td></tr>
+                                <tr><td class="label-col">Alamat</td><td>: ${loc.alamat_lengkap || '-'}</td></tr>
+                                ${rowHalal}
+                            </table>
+                        </div>
+                    `;
+                    // --- AKHIR LOGIKA POPUP ---
 
-        // Tampilkan Layer Default (Cluster)
-        map.addLayer(clusterLayer);
-        
-        const btnStandard = document.getElementById('view-standard');
-        const btnCluster = document.getElementById('view-cluster');
-        const btnHeatmap = document.getElementById('view-heatmap');
-        const btnToggleGroup = document.getElementById('view-toggle');
-        const btnFindMe = document.getElementById('find-me');
-
-        function clearLayers() {
-            map.removeLayer(standardLayer);
-            map.removeLayer(clusterLayer);
-            map.removeLayer(heatmapLayer);
-        }
-
-        function setActiveButton(activeBtn) {
-            btnToggleGroup.querySelectorAll('.btn').forEach(btn => {
-                btn.classList.remove('active', 'btn-primary');
-                btn.classList.add('btn-outline-primary');
+                    let marker = L.marker(latLng).bindPopup(popupContent);
+                    standardLayer.addLayer(marker);
+                    clusterLayer.addLayer(marker);
+                    heatPoints.push(latLng);
+                }
             });
-            activeBtn.classList.add('active', 'btn-primary');
-            activeBtn.classList.remove('btn-outline-primary');
+            
+            var heatmapLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15 });
+            map.addLayer(clusterLayer); // Default layer
+
+            // Tombol Kontrol Layer
+            const btnStandard = document.getElementById('view-standard');
+            const btnCluster = document.getElementById('view-cluster');
+            const btnHeatmap = document.getElementById('view-heatmap');
+            const btnToggleGroup = document.getElementById('view-toggle');
+            const btnFindMe = document.getElementById('find-me');
+
+            function clearLayers() { map.removeLayer(standardLayer); map.removeLayer(clusterLayer); map.removeLayer(heatmapLayer); }
+            function setActiveButton(activeBtn) {
+                btnToggleGroup.querySelectorAll('.btn').forEach(btn => { btn.classList.remove('active', 'btn-primary'); btn.classList.add('btn-outline-primary'); });
+                activeBtn.classList.add('active', 'btn-primary'); activeBtn.classList.remove('btn-outline-primary');
+            }
+
+            btnStandard.addEventListener('click', function() { clearLayers(); map.addLayer(standardLayer); setActiveButton(this); });
+            btnCluster.addEventListener('click', function() { clearLayers(); map.addLayer(clusterLayer); setActiveButton(this); });
+            btnHeatmap.addEventListener('click', function() { clearLayers(); map.addLayer(heatmapLayer); setActiveButton(this); });
+            btnFindMe.addEventListener('click', function() { map.locate({ setView: true, maxZoom: 16 }); });
+            map.on('locationfound', e => L.marker(e.latlng).addTo(map).bindPopup("Lokasi Anda").openPopup());
+        } else if (!locations || locations.length === 0) {
+             document.getElementById('map-error').textContent = 'Tidak ada data lokasi UMKM.';
+             document.getElementById('map-error').style.display = 'block';
         }
+    } catch (e) { console.error("Peta Error", e); }
 
-        btnStandard.addEventListener('click', function() { clearLayers(); map.addLayer(standardLayer); setActiveButton(this); });
-        btnCluster.addEventListener('click', function() { clearLayers(); map.addLayer(clusterLayer); setActiveButton(this); });
-        btnHeatmap.addEventListener('click', function() { clearLayers(); map.addLayer(heatmapLayer); setActiveButton(this); });
-        btnFindMe.addEventListener('click', function() { map.locate({ setView: true, maxZoom: 16 }); });
-        map.on('locationfound', e => L.marker(e.latlng).addTo(map).bindPopup("Lokasi Anda").openPopup());
-        map.on('locationerror', e => alert("Tidak bisa mendapatkan lokasi Anda: " + e.message));
-
-    } catch (e) {
-        console.error("Gagal memuat peta:", e);
-        mapErrorDiv.textContent = 'Gagal memuat peta: ' + e.message;
-        mapErrorDiv.style.display = 'block';
-        mapElement.style.display = 'none'; // Sembunyikan peta jika error
-    }
-    
-    // =================================================================
-    // KODE FILTER KECAMATAN -> KELURAHAN (Request 3)
-    // =================================================================
-    // Menggunakan jQuery untuk AJAX
+    // --- Kode Filter Kelurahan (Tetap Sama) ---
     const kecamatanFilterSelect = $('#kecamatan_id_filter');
     const kelurahanFilterSelect = $('#kelurahan_id_filter');
-    // Ambil ID kelurahan yang mungkin sudah terpilih dari request sebelumnya
     const selectedKelurahanId = '{{ request('kelurahan_id') }}';
-    // Ambil ID kecamatan yang mungkin sudah terpilih dari request sebelumnya
     const selectedKecamatanId = '{{ $selectedKecamatanId ?? request('kecamatan_id') }}';
 
-
     function fetchKelurahanFilter(kecamatanId) {
-        if (!kecamatanId) {
-            kelurahanFilterSelect.html('<option value="">Semua Kelurahan</option>');
-            return;
-        }
-        
-        // Ganti URL API jika rute Anda berbeda
+        if (!kecamatanId) { kelurahanFilterSelect.html('<option value="">Semua Kelurahan</option>'); return; }
         $.ajax({
-            url: `/api/kelurahan/${kecamatanId}`,
-            type: 'GET',
+            url: `/api/kelurahan/${kecamatanId}`, type: 'GET',
             success: function(data) {
                 let options = '<option value="">Semua Kelurahan</option>';
                 data.forEach(kelurahan => {
-                    // Tandai sebagai 'selected' jika ID-nya cocok
                     const isSelected = kelurahan.id == selectedKelurahanId ? 'selected' : '';
                     options += `<option value="${kelurahan.id}" ${isSelected}>${kelurahan.nama_kelurahan}</option>`;
                 });
                 kelurahanFilterSelect.html(options);
-            },
-            error: function(err) {
-                console.error('Gagal mengambil data kelurahan untuk filter:', err);
-                kelurahanFilterSelect.html('<option value="">Gagal memuat</option>');
             }
         });
     }
-
-    // Panggil saat halaman dimuat, jika kecamatan sudah terpilih
-    if(selectedKecamatanId) {
-        fetchKelurahanFilter(selectedKecamatanId);
-    }
-
-    // Panggil saat dropdown kecamatan diubah
-    kecamatanFilterSelect.on('change', function() {
-        fetchKelurahanFilter(this.value);
-    });
-
+    if(selectedKecamatanId) fetchKelurahanFilter(selectedKecamatanId);
+    kecamatanFilterSelect.on('change', function() { fetchKelurahanFilter(this.value); });
 });
 </script>
 @endpush

@@ -150,40 +150,92 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 {{-- JS untuk Plugin Pencarian (Leaflet GeoSearch) --}}
 <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.umd.js"></script>
-{{-- jQuery (jika belum ada di layout utama) --}}
+{{-- jQuery --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // ... (Kode Peta dan Geosearch tetap sama) ...
+        // 1. Inisialisasi Peta dan Elemen Input
         const latInput = document.getElementById('latitude');
         const lngInput = document.getElementById('longitude');
-        const alamatInput = document.getElementById('alamat_lengkap');
+        const alamatInput = document.getElementById('alamat_lengkap'); // Target textarea alamat
+        
+        // Koordinat default (Kediri)
         var map = L.map('map').setView([-7.8225, 112.0119], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
         var marker = L.marker([-7.8225, 112.0119], { draggable: true }).addTo(map);
+
+        // 2. Setup Pencarian Lokasi
         const provider = new GeoSearch.OpenStreetMapProvider();
         const searchControl = new GeoSearch.GeoSearchControl({
-            provider: provider, style: 'bar', showMarker: false,
-            autoClose: true, keepResult: true, searchLabel: 'Cari lokasi...'
+            provider: provider,
+            style: 'bar',
+            showMarker: false, // Jangan buat marker ganda, kita pakai marker utama
+            autoClose: true,
+            keepResult: true,
+            searchLabel: 'Cari lokasi (Desa/Jalan)...'
         });
         map.addControl(searchControl);
+
+        // 3. Fungsi Update Koordinat & Panggil Alamat Otomatis
         function updateLocationData(latlng) {
+            // Update input latitude & longitude
             latInput.value = latlng.lat.toFixed(7);
             lngInput.value = latlng.lng.toFixed(7);
+            
+            // Panggil fungsi untuk ambil alamat otomatis
+            fetchAddress(latlng.lat, latlng.lng);
         }
-        marker.on('dragend', e => updateLocationData(e.target.getLatLng()));
-        map.on('click', e => {
+
+        // 4. Fungsi Reverse Geocoding (Ambil Alamat dari Koordinat)
+        function fetchAddress(lat, lng) {
+            // Beri indikator loading di textarea
+            alamatInput.value = "Sedang mengambil alamat dari titik peta...";
+            
+            // URL API Nominatim OpenStreetMap
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        // Masukkan alamat hasil pencarian ke textarea
+                        alamatInput.value = data.display_name;
+                    } else {
+                        alamatInput.value = "Alamat tidak ditemukan, silakan isi manual.";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching address:', error);
+                    alamatInput.value = "Gagal mengambil alamat (Cek koneksi internet). Silakan isi manual.";
+                });
+        }
+
+        // 5. Event Listener: Saat Marker Digeser
+        marker.on('dragend', function(e) {
+            updateLocationData(e.target.getLatLng());
+        });
+
+        // 6. Event Listener: Saat Peta Diklik
+        map.on('click', function(e) {
             marker.setLatLng(e.latlng);
             updateLocationData(e.latlng);
         });
+
+        // 7. Event Listener: Saat Hasil Pencarian Dipilih
         map.on('geosearch/showlocation', function(result) {
             const latlng = { lat: result.location.y, lng: result.location.x };
             marker.setLatLng(latlng);
             updateLocationData(latlng);
         });
+
         
-        // --- Logika Dropdown Kecamatan & Kelurahan (Menggunakan jQuery) ---
+        // --- BAGIAN LOGIKA DROPDOWN & HALAL (TETAP SAMA) ---
+        
         const kecamatanSelect = $('#kecamatan_id');
         const kelurahanSelect = $('#kelurahan_id');
         const selectedKelurahanId = '{{ old('kelurahan_id') }}';
@@ -209,15 +261,16 @@
                 }
             });
         }
+
         if (kecamatanSelect.val()) {
             fetchKelurahan(kecamatanSelect.val());
         }
+
         kecamatanSelect.on('change', function() {
             fetchKelurahan(this.value);
         });
 
-
-        // ▼▼▼ KODE BARU UNTUK KATEGORI -> STATUS HALAL ▼▼▼
+        // Logika Kategori & Status Halal
         const kategoriSelect = document.getElementById('kategori_umkm');
         const halalWrapper = document.getElementById('status-halal-wrapper');
         const halalSelect = document.getElementById('status_halal');
@@ -229,14 +282,14 @@
             } else {
                 halalWrapper.style.display = 'none';
                 halalSelect.removeAttribute('required');
-                halalSelect.value = ''; // Kosongkan nilai saat disembunyikan
+                halalSelect.value = ''; 
             }
         }
-        // Panggil saat halaman dimuat (untuk menangani 'old input' jika validasi gagal)
-        toggleHalalField();
-        // Panggil saat dropdown kategori diubah
-        kategoriSelect.addEventListener('change', toggleHalalField);
-        // ▲▲▲ AKHIR KODE BARU ▲▲▲
+
+        if (kategoriSelect) {
+            toggleHalalField();
+            kategoriSelect.addEventListener('change', toggleHalalField);
+        }
     });
 </script>
 @endpush

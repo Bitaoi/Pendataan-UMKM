@@ -16,6 +16,14 @@ return new class extends Migration
             $table->string('nama_usaha');
             $table->string('nama_pemilik');
             
+            // ▼▼▼ PENAMBAHAN KOLOM BARU ▼▼▼
+            // Menambahkan kategori UMKM (Wajib diisi)
+            $table->string('kategori_umkm'); 
+            
+            // Menambahkan status halal (Boleh kosong / nullable)
+            $table->string('status_halal')->nullable();
+            // ▲▲▲ AKHIR PENAMBAHAN ▲▲▲
+
             // Menggunakan foreign key yang benar ke tabel kelurahans
             $table->foreignId('kelurahan_id')->constrained('kelurahans')->onDelete('cascade');
             
